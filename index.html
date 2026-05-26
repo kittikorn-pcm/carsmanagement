@@ -14,11 +14,17 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- HTML5 QR Code Scanner (ไลบรารีสแกนคิวอาร์โค้ดผ่านกล้องมือถือ) -->
+    <!-- HTML5 QR Code Scanner (สำหรับเปิดกล้องบนเว็บ) -->
     <script src="https://unpkg.com/html5-qrcode"></script>
 
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- การประกาศตัวแปรเพื่อป้องกันปัญหา ReferenceError บน GitHub Pages -->
+    <script>
+        // ป้องกัน Error ในกรณีรันบน GitHub Pages ที่ไม่ได้รับค่าจาก Google Template
+        const INITIAL_CAR_ID = "";
+    </script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
@@ -93,7 +99,6 @@
                 <p class="text-sm text-slate-400 max-w-[240px] mx-auto leading-relaxed mt-1">แตะปุ่มด้านล่างเพื่อเปิดกล้องมือถือสแกน QR Code ที่ติดบนตัวรถ</p>
             </div>
             
-            <!-- ปุ่มสแกนกล้องจริงๆ -->
             <button onclick="startQRScanner()" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition shadow-md shadow-emerald-600/20 flex items-center justify-center space-x-2">
                 <i class="fa-solid fa-camera"></i>
                 <span>เปิดกล้องสแกน QR Code</span>
@@ -374,7 +379,7 @@
             timerProgressBar: true
         });
 
-        // ฟังก์ชันหัวใจสำคัญ: ส่งข้อมูลไปหา Google Apps Script API พร้อมป้องกันปัญหา CORS
+        // ฟังก์ชันส่งข้อมูลไปหา Google Apps Script API พร้อมป้องกันปัญหา CORS
         async function fetchAPI(action, payload = {}) {
             if (!BACKEND_URL || BACKEND_URL.startsWith("YOUR_GOOGLE_APPS_SCRIPT")) {
                 // หากรันในสภาวะจำลองและยังไม่ได้เซ็ตลิงก์จริง จะดึง Mock data ทำงานทันที
@@ -387,7 +392,7 @@
                     mode: 'cors',
                     redirect: 'follow',
                     headers: {
-                        'Content-Type': 'text/plain;charset=utf-8' // สำคัญมาก: หลีกเลี่ยง CORS Preflight OPTIONS check ของ GAS
+                        'Content-Type': 'text/plain;charset=utf-8' // หลีกเลี่ยง CORS Preflight OPTIONS check ของ GAS
                     },
                     body: JSON.stringify({ action, payload })
                 });
@@ -410,7 +415,8 @@
         function initApp() {
             // ดึงค่า parameter จากลิงก์เว็บปัจจุบัน (เช่น https://...github.io/?car=CAR001)
             const urlParams = new URLSearchParams(window.location.search);
-            const carId = urlParams.get('car') || '';
+            // ตรวจหาตัวแปรอย่างระมัดระวัง (Null-safe)
+            const carId = urlParams.get('car') || (typeof INITIAL_CAR_ID !== 'undefined' ? INITIAL_CAR_ID : '') || '';
 
             fetchAPI('getInitialData', { scannedCarId: carId })
                 .then(handleInitialData)
@@ -880,7 +886,6 @@
 
         // --- ระบบสร้าง QR Code ---
         function showQRCode(carId, carName) {
-            // ดึง URL โดเมนปัจจุบันของหน้าเว็บ GitHub Pages ไปแปลงเป็น URL ให้พนักงานสแกนตรงเข้ามา
             const currentUrlBase = window.location.href.split('?')[0];
             const url = `${currentUrlBase}?car=${carId}`;
             const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
@@ -926,9 +931,9 @@
                 .catch(() => alert('ไม่สามารถดาวน์โหลดได้ กรุณากดค้างที่รูปภาพเพื่อบันทึกแทน'));
         }
 
-        // --- Mock Data (สำหรับรันนอกโฮสติ้ง หรือรันบนคอมพิวเตอร์แบบออฟไลน์) ---
+        // --- Mock Data (สำหรับรันช่วงออฟไลน์ หรือยังไม่ได้ระบุสคริปต์จริง) ---
         function getMockData(action, payload) {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 setTimeout(() => {
                     if (action === 'getInitialData') {
                         resolve({
