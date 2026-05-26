@@ -410,7 +410,7 @@
         function initApp() {
             // ดึงค่า parameter จากลิงก์เว็บปัจจุบัน (เช่น https://...github.io/?car=CAR001)
             const urlParams = new URLSearchParams(window.location.search);
-            const carId = urlParams.get('car') || INITIAL_CAR_ID || '';
+            const carId = urlParams.get('car') || '';
 
             fetchAPI('getInitialData', { scannedCarId: carId })
                 .then(handleInitialData)
