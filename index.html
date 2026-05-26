@@ -101,16 +101,19 @@
                 <button onclick="switchTab('form')" data-side="form" class="side-nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-blue-50 transition">
                     <i class="fa-solid fa-qrcode w-5 text-center"></i><span>สแกนบันทึก</span>
                 </button>
-                <button onclick="switchTab('dashboard')" data-side="dashboard" class="side-nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-blue-50 transition">
-                    <i class="fa-solid fa-chart-bar w-5 text-center"></i><span>แดชบอร์ด</span>
-                </button>
-                <button onclick="switchTab('history')" data-side="history" class="side-nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-blue-50 transition">
-                    <i class="fa-solid fa-list-ul w-5 text-center"></i><span>ประวัติสัญจร</span>
+                <button onclick="switchTab('carStatus')" data-side="carStatus" class="side-nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-blue-50 transition">
+                    <i class="fa-solid fa-car-side w-5 text-center"></i><span>สถานะรถปัจจุบัน</span>
                 </button>
 
                 <!-- Admin only items -->
                 <div id="sideAdminGroup" class="hidden">
                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mt-4 mb-1">จัดการระบบ (Admin)</p>
+                    <button onclick="switchTab('dashboard')" data-side="dashboard" class="side-nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-blue-50 transition">
+                        <i class="fa-solid fa-chart-bar w-5 text-center"></i><span>แดชบอร์ด</span>
+                    </button>
+                    <button onclick="switchTab('history')" data-side="history" class="side-nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-blue-50 transition">
+                        <i class="fa-solid fa-list-ul w-5 text-center"></i><span>ประวัติสัญจร</span>
+                    </button>
                     <button onclick="switchTab('admin')" data-side="admin" class="side-nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-blue-50 transition">
                         <i class="fa-solid fa-car w-5 text-center"></i><span>จัดการข้อมูลรถ</span>
                     </button>
@@ -287,6 +290,38 @@
                             <i class="fa-solid fa-flag-checkered mr-1.5"></i> ลงทะเบียนส่งคืนพาหนะ
                         </button>
                     </form>
+                </div>
+
+                <!-- View: Car Status (สถานะรถปัจจุบัน - User accessible, Read-only) -->
+                <div id="carStatusView" class="hidden space-y-4 pb-6">
+                    <div class="flex justify-between items-center flex-wrap gap-2">
+                        <h2 class="text-lg font-bold text-slate-800 tracking-tight flex items-center"><i class="fa-solid fa-car-side mr-2 text-blue-600"></i>สถานะรถปัจจุบัน</h2>
+                        <button onclick="loadCarStatus()" class="text-xs font-semibold text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition border border-blue-200 flex items-center">
+                            <i class="fa-solid fa-rotate mr-1"></i> รีเฟรช
+                        </button>
+                    </div>
+
+                    <!-- Status Summary -->
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-2 border-l-emerald-500">
+                            <span class="text-[10px] font-bold tracking-wider text-emerald-600 uppercase">ว่างพร้อมใช้</span>
+                            <p class="text-2xl font-black text-emerald-600 mt-2" id="cs_avail">0</p>
+                            <span class="text-[10px] text-slate-400">คัน</span>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-2 border-l-red-500">
+                            <span class="text-[10px] font-bold tracking-wider text-red-500 uppercase">กำลังใช้งาน</span>
+                            <p class="text-2xl font-black text-red-500 mt-2" id="cs_using">0</p>
+                            <span class="text-[10px] text-slate-400">คัน</span>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-2 border-l-slate-400">
+                            <span class="text-[10px] font-bold tracking-wider text-slate-600 uppercase">ซ่อมบำรุง</span>
+                            <p class="text-2xl font-black text-slate-700 mt-2" id="cs_maintain">0</p>
+                            <span class="text-[10px] text-slate-400">คัน</span>
+                        </div>
+                    </div>
+
+                    <!-- Cars Grid (read-only) -->
+                    <div id="carStatusGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
                 </div>
 
                 <!-- View: Dashboard (Admin) -->
@@ -550,10 +585,6 @@
             <i class="fa-solid fa-qrcode text-lg mb-1"></i>
             <span class="text-[10px] font-medium tracking-tight">สแกนบันทึก</span>
         </button>
-        <button onclick="switchTab('dashboard')" id="tab-dashboard" class="nav-btn flex flex-col items-center flex-1 py-1.5 text-slate-400 hover:text-slate-600 transition-colors duration-200">
-            <i class="fa-solid fa-chart-bar text-lg mb-1"></i>
-            <span class="text-[10px] font-medium tracking-tight">แดชบอร์ด</span>
-        </button>
 
         <!-- Center Admin Hamburger Button (only shows for admins) -->
         <button id="adminFab" onclick="toggleAdminGridPanel()" class="hidden flex-col items-center flex-1 py-1.5 transition">
@@ -563,9 +594,9 @@
             <span class="text-[10px] font-medium tracking-tight text-blue-600 mt-0.5">เมนูจัดการ</span>
         </button>
 
-        <button onclick="switchTab('history')" id="tab-history" class="nav-btn flex flex-col items-center flex-1 py-1.5 text-slate-400 hover:text-slate-600 transition-colors duration-200">
-            <i class="fa-solid fa-list-ul text-lg mb-1"></i>
-            <span class="text-[10px] font-medium tracking-tight">ประวัติสัญจร</span>
+        <button onclick="switchTab('carStatus')" id="tab-carStatus" class="nav-btn flex flex-col items-center flex-1 py-1.5 text-slate-400 hover:text-slate-600 transition-colors duration-200">
+            <i class="fa-solid fa-car-side text-lg mb-1"></i>
+            <span class="text-[10px] font-medium tracking-tight">สถานะรถ</span>
         </button>
     </nav>
 
@@ -727,7 +758,7 @@
             STATE.currentTab = tabName;
 
             // ปุ่มล่าง (Bottom nav) — เฉพาะแท็บที่อยู่ในนาวิเกชันมือถือ
-            const tabs = ['form', 'dashboard', 'history'];
+            const tabs = ['form', 'carStatus', 'dashboard', 'history'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 if (btn) {
@@ -763,12 +794,22 @@
 
         function renderNavigation() {
             // ซ่อนทุก View ก่อน
-            ['formView','emptyStateView','dashboardView','historyView','errorView','adminLoginView','adminPanelView','carUsageView']
+            ['formView','emptyStateView','dashboardView','historyView','errorView','adminLoginView','adminPanelView','carUsageView','carStatusView']
                 .forEach(id => document.getElementById(id).classList.add('hidden'));
+
+            // เมนูที่อนุญาตเฉพาะ Admin
+            const adminOnlyTabs = ['dashboard','history','admin','carUsage'];
+            if (adminOnlyTabs.includes(STATE.currentTab) && !STATE.isAdminLogged) {
+                // ถ้า user ทั่วไปกดเข้าเมนู admin -> แสดงหน้า login
+                if (STATE.currentTab !== 'admin') STATE.currentTab = 'admin';
+                document.getElementById('adminLoginView').classList.remove('hidden');
+                return;
+            }
 
             // อัปเดต Header title สำหรับ Desktop
             const titleMap = {
                 form: STATE.car ? 'บันทึกการใช้รถ' : 'สแกน QR Code',
+                carStatus: 'สถานะรถปัจจุบัน',
                 dashboard: 'ภาพรวมแดชบอร์ด',
                 history: 'ประวัติการสัญจร',
                 admin: 'จัดการข้อมูลรถ',
@@ -784,6 +825,8 @@
                 } else {
                     document.getElementById('emptyStateView').classList.remove('hidden');
                 }
+            } else if (STATE.currentTab === 'carStatus') {
+                loadCarStatus();
             } else if (STATE.currentTab === 'dashboard') {
                 loadDashboardData();
             } else if (STATE.currentTab === 'history') {
@@ -1260,6 +1303,92 @@
         }
 
         // ============================================
+        // === Car Status (Read-only for everyone) ===
+        // ============================================
+        function loadCarStatus() {
+            showLoadingOverlay('กำลังดึงสถานะรถทั้งหมด...');
+            fetchAPI('getCarsStatus')
+                .then(renderCarStatus)
+                .catch(err => {
+                    // กรณี backend ยังไม่มี action นี้ ลอง fallback ใช้ getAdminCars ถ้ามีสิทธิ์ admin
+                    if (STATE.isAdminLogged) {
+                        fetchAPI('getAdminCars')
+                            .then(renderCarStatus)
+                            .catch(e2 => handleServerErr(e2.message));
+                    } else {
+                        handleServerErr(err.message + ' (กรุณาเพิ่ม action "getCarsStatus" ใน code.gs)');
+                    }
+                });
+        }
+
+        function renderCarStatus(cars) {
+            Swal.close();
+            document.getElementById('carStatusView').classList.remove('hidden');
+
+            let avail = 0, using = 0, maintain = 0;
+            (cars || []).forEach(c => {
+                if (c.Status === 'AVAILABLE') avail++;
+                else if (c.Status === 'USING') using++;
+                else if (c.Status === 'MAINTENANCE') maintain++;
+            });
+            document.getElementById('cs_avail').innerText = avail;
+            document.getElementById('cs_using').innerText = using;
+            document.getElementById('cs_maintain').innerText = maintain;
+
+            const grid = document.getElementById('carStatusGrid');
+            grid.innerHTML = '';
+
+            if (!cars || !cars.length) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-10 bg-white rounded-2xl border border-slate-100 shadow-sm text-slate-400">
+                        <i class="fa-regular fa-folder-open text-3xl mb-2"></i>
+                        <p class="text-xs">ยังไม่มีข้อมูลรถในระบบ</p>
+                    </div>`;
+                return;
+            }
+
+            cars.forEach(c => {
+                let borderColor, badgeColor, statusText, icon;
+                if (c.Status === 'AVAILABLE') {
+                    borderColor = 'border-l-emerald-500';
+                    badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                    statusText = 'ว่างพร้อมใช้';
+                    icon = '<i class="fa-solid fa-circle-check text-emerald-500"></i>';
+                } else if (c.Status === 'USING') {
+                    borderColor = 'border-l-red-500';
+                    badgeColor = 'bg-red-50 text-red-700 border-red-200';
+                    statusText = 'กำลังใช้งาน';
+                    icon = '<i class="fa-solid fa-route text-red-500"></i>';
+                } else {
+                    borderColor = 'border-l-slate-400';
+                    badgeColor = 'bg-slate-100 text-slate-700 border-slate-200';
+                    statusText = 'ซ่อมบำรุง';
+                    icon = '<i class="fa-solid fa-wrench text-slate-500"></i>';
+                }
+
+                const updated = c.LastUpdated ? new Date(c.LastUpdated).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+                grid.innerHTML += `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-4 ${borderColor} flex flex-col space-y-2">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center space-x-1.5">
+                                    ${icon}
+                                    <h4 class="font-bold text-slate-800 truncate">${c.CarID}</h4>
+                                </div>
+                                <p class="text-xs text-slate-500 font-medium truncate mt-1">${c.CarName || '-'}</p>
+                                <p class="text-[11px] text-slate-400 mt-0.5">ทะเบียน: ${c.LicensePlate || '-'}</p>
+                            </div>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border whitespace-nowrap ${badgeColor}">${statusText}</span>
+                        </div>
+                        <div class="flex justify-between items-center pt-2 border-t border-slate-50 text-[11px] text-slate-500">
+                            <span><i class="fa-solid fa-gauge-simple mr-1 text-slate-400"></i>${Number(c.CurrentMileage || 0).toLocaleString()} กม.</span>
+                            <span class="text-slate-400"><i class="fa-regular fa-clock mr-1"></i>${updated}</span>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        // ============================================
         // === Admin Grid Panel (Mobile) Functions ===
         // ============================================
         function toggleAdminGridPanel() {
@@ -1552,10 +1681,11 @@
                         });
                     } else if (action === 'adminLogin') {
                         resolve({ success: true });
-                    } else if (action === 'getAdminCars') {
+                    } else if (action === 'getAdminCars' || action === 'getCarsStatus') {
                         resolve([
-                            { CarID: 'CAR001', CarName: 'รถกระบะแคปสีบรอนซ์', LicensePlate: 'บม 9999 นนทบุรี', Status: 'AVAILABLE', CurrentMileage: 85000 },
-                            { CarID: 'CAR002', CarName: 'รถตู้ตารางงานวีไอพี', LicensePlate: 'ฮน 5432 กรุงเทพฯ', Status: 'USING', CurrentMileage: 130240 }
+                            { CarID: 'CAR001', CarName: 'รถกระบะแคปสีบรอนซ์', LicensePlate: 'บม 9999 นนทบุรี', Status: 'AVAILABLE', CurrentMileage: 85000, LastUpdated: new Date() },
+                            { CarID: 'CAR002', CarName: 'รถตู้ตารางงานวีไอพี', LicensePlate: 'ฮน 5432 กรุงเทพฯ', Status: 'USING', CurrentMileage: 130240, LastUpdated: new Date() },
+                            { CarID: 'CAR003', CarName: 'รถเก๋งผู้บริหาร', LicensePlate: 'ขข 7777 กรุงเทพฯ', Status: 'MAINTENANCE', CurrentMileage: 67400, LastUpdated: new Date() }
                         ]);
                     } else if (action === 'getCarUsageReport') {
                         // Mock: รายการการใช้รถ
@@ -1576,7 +1706,7 @@
 
         function showError(msg) {
             Swal.close();
-            ['formView','emptyStateView','dashboardView','historyView','adminPanelView','adminLoginView','carUsageView']
+            ['formView','emptyStateView','dashboardView','historyView','adminPanelView','adminLoginView','carUsageView','carStatusView']
                 .forEach(id => document.getElementById(id).classList.add('hidden'));
             document.getElementById('errorView').classList.remove('hidden');
             document.getElementById('errorText').innerText = msg;
