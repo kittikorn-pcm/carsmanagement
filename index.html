@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Smart Fleet Management</title>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -28,333 +28,610 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
-        body { 
-            font-family: 'Prompt', sans-serif; 
-            background-color: #f8fafc;
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #f1f5f9;
             -webkit-tap-highlight-color: transparent;
         }
-        .spinner { 
-            border: 3px solid rgba(16, 185, 129, 0.1); 
-            width: 40px; 
-            height: 40px; 
-            border-radius: 50%; 
-            border-left-color: #10b981; 
-            animation: spin 0.8s linear infinite; 
+        .spinner {
+            border: 3px solid rgba(37, 99, 235, 0.1);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border-left-color: #2563eb;
+            animation: spin 0.8s linear infinite;
         }
-        @keyframes spin { 
-            0% { transform: rotate(0deg); } 
-            100% { transform: rotate(360deg); } 
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Slide-up animation สำหรับ Admin Panel ด้านล่าง */
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .anim-slide-up { animation: slideUp 0.25s ease-out; }
+
+        /* ปุ่ม Hamburger ตรงกลาง Bottom Nav */
+        .fab-center {
+            position: relative;
+            top: -18px;
+            box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.5);
+        }
+        /* Sidebar (Desktop) - แสดงเฉพาะหน้าจอใหญ่ */
+        @media (min-width: 1024px) {
+            body { padding-bottom: 0 !important; }
+            #bottomNav { display: none !important; }
+            #adminGridPanel { display: none !important; }
+        }
+        @media (max-width: 1023px) {
+            #sidebar { display: none !important; }
         }
     </style>
 </head>
-<body class="text-slate-800 antialiased selection:bg-emerald-100 pb-24">
+<body class="text-slate-800 antialiased selection:bg-blue-100 pb-24 lg:pb-0">
 
-    <!-- Top Status Bar -->
-    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-100 px-4 py-3.5 flex justify-between items-center">
-        <div class="flex items-center space-x-2">
-            <div class="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100">
-                <i class="fa-solid fa-car-side text-emerald-600 text-sm"></i>
+    <div class="lg:flex">
+
+        <!-- ===================== SIDEBAR (Desktop only) ===================== -->
+        <aside id="sidebar" class="fixed top-0 left-0 h-screen w-64 bg-white border-r border-slate-200 z-40 flex flex-col">
+            <!-- Brand -->
+            <div class="px-5 py-5 border-b border-slate-100 flex items-center space-x-2">
+                <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-md shadow-blue-600/30">
+                    <i class="fa-solid fa-car-side text-white text-base"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-slate-800 tracking-tight text-base leading-none">SmartFleet</h1>
+                    <span class="text-[10px] text-slate-400 font-medium">Vehicle Management</span>
+                </div>
             </div>
-            <span class="font-bold text-slate-800 tracking-tight text-base">SmartFleet</span>
-        </div>
-        <div class="flex items-center space-x-3">
-            <button onclick="switchTab('admin')" class="text-slate-400 hover:text-emerald-600 transition">
-                <i class="fa-solid fa-gear text-lg"></i>
-            </button>
-            <div id="topUserBadge" class="hidden flex items-center space-x-1.5 bg-slate-100/80 px-2.5 py-1 rounded-full border border-slate-200/50">
+
+            <!-- User Badge -->
+            <div id="sideUserBadge" class="hidden mx-4 my-4 px-3 py-2.5 rounded-xl bg-blue-50 border border-blue-100 flex items-center space-x-2">
                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span id="userNameDisplay" class="text-xs font-semibold text-slate-600">User</span>
+                <div class="flex-1 min-w-0">
+                    <p id="sideUserName" class="text-xs font-bold text-slate-700 truncate">User</p>
+                    <p id="sideUserRole" class="text-[10px] text-slate-500">USER</p>
+                </div>
             </div>
-        </div>
-    </header>
 
-    <!-- Loading Screen -->
-    <div id="loadingView" class="flex flex-col items-center justify-center min-h-[75vh]">
-        <div class="spinner mb-4"></div>
-        <p class="text-slate-400 text-sm font-medium tracking-wide">กำลังเตรียมข้อมูลระบบ...</p>
+            <!-- Nav Items -->
+            <nav class="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mt-2 mb-1">เมนูหลัก</p>
+                <button onclick="switchTab('form')" data-side="form" class="side-nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-blue-50 transition">
+                    <i class="fa-solid fa-qrcode w-5 text-center"></i><span>สแกนบันทึก</span>
+                </button>
+                <button onclick="switchTab('dashboard')" data-side="dashboard" class="side-nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-blue-50 transition">
+                    <i class="fa-solid fa-chart-bar w-5 text-center"></i><span>แดชบอร์ด</span>
+                </button>
+                <button onclick="switchTab('history')" data-side="history" class="side-nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-blue-50 transition">
+                    <i class="fa-solid fa-list-ul w-5 text-center"></i><span>ประวัติสัญจร</span>
+                </button>
+
+                <!-- Admin only items -->
+                <div id="sideAdminGroup" class="hidden">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mt-4 mb-1">จัดการระบบ (Admin)</p>
+                    <button onclick="switchTab('admin')" data-side="admin" class="side-nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-blue-50 transition">
+                        <i class="fa-solid fa-car w-5 text-center"></i><span>จัดการข้อมูลรถ</span>
+                    </button>
+                    <button onclick="switchTab('carUsage')" data-side="carUsage" class="side-nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-blue-50 transition">
+                        <i class="fa-solid fa-chart-line w-5 text-center"></i><span>สถิติการใช้รถ</span>
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Admin entry button (bottom of sidebar) -->
+            <div class="p-3 border-t border-slate-100">
+                <button id="sideAdminEntryBtn" onclick="switchTab('admin')" class="w-full flex items-center justify-center space-x-2 py-2.5 px-3 rounded-xl bg-slate-50 hover:bg-blue-50 text-slate-600 hover:text-blue-700 text-xs font-semibold transition border border-slate-200">
+                    <i class="fa-solid fa-user-shield"></i>
+                    <span>สำหรับผู้ดูแลระบบ</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- ===================== MAIN AREA ===================== -->
+        <div class="flex-1 lg:ml-64 min-h-screen">
+
+            <!-- Top Status Bar -->
+            <header class="bg-white/90 backdrop-blur-md sticky top-0 z-30 border-b border-slate-100 px-4 py-3.5 flex justify-between items-center">
+                <div class="flex items-center space-x-2 lg:hidden">
+                    <div class="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center shadow-sm shadow-blue-600/30">
+                        <i class="fa-solid fa-car-side text-white text-sm"></i>
+                    </div>
+                    <span class="font-bold text-slate-800 tracking-tight text-base">SmartFleet</span>
+                </div>
+                <div class="hidden lg:block">
+                    <h2 id="pageHeaderTitle" class="text-base font-bold text-slate-800">ยินดีต้อนรับ</h2>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <!-- ปุ่มเข้าสู่หน้าผู้ดูแลระบบ (แสดงเฉพาะ mobile) -->
+                    <button onclick="switchTab('admin')" class="lg:hidden inline-flex items-center space-x-1.5 px-2.5 py-1.5 rounded-full text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition text-[11px] font-semibold">
+                        <i class="fa-solid fa-user-shield text-xs"></i>
+                        <span>สำหรับผู้ดูแลระบบ</span>
+                    </button>
+                    <div id="topUserBadge" class="hidden flex items-center space-x-1.5 bg-slate-100/80 px-2.5 py-1 rounded-full border border-slate-200/50">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span id="userNameDisplay" class="text-xs font-semibold text-slate-600">User</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Loading Screen -->
+            <div id="loadingView" class="flex flex-col items-center justify-center min-h-[75vh]">
+                <div class="spinner mb-4"></div>
+                <p class="text-slate-400 text-sm font-medium tracking-wide">กำลังเตรียมข้อมูลระบบ...</p>
+            </div>
+
+            <!-- Main Container -->
+            <main class="max-w-4xl mx-auto px-4 pt-4 hidden" id="mainApp">
+
+                <!-- View: Error -->
+                <div id="errorView" class="hidden text-center py-12 px-6 bg-white rounded-2xl shadow-sm border border-slate-100 max-w-md mx-auto">
+                    <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-100">
+                        <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                    </div>
+                    <h2 class="text-lg font-bold text-slate-800 mb-1">พบข้อผิดพลาดการเชื่อมต่อ</h2>
+                    <p class="text-sm text-slate-500 mb-6 leading-relaxed" id="errorText">กรุณาลองใหม่อีกครั้ง</p>
+                    <button onclick="window.location.reload()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition shadow-sm active:scale-95">
+                        <i class="fa-solid fa-rotate-right mr-1.5"></i> ตกลง / ลองอีกครั้ง
+                    </button>
+                </div>
+
+                <!-- View: Empty State & Live Scan (กล้องสแกนจริง) -->
+                <div id="emptyStateView" class="hidden text-center py-16 px-6 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-6 max-w-md mx-auto">
+                    <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto border border-blue-100">
+                        <i class="fa-solid fa-qrcode text-2xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">พร้อมลงทะเบียนสแกนรถ</h2>
+                        <p class="text-sm text-slate-400 max-w-[240px] mx-auto leading-relaxed mt-1">แตะปุ่มด้านล่างเพื่อเปิดกล้องมือถือสแกน QR Code ที่ติดบนตัวรถ</p>
+                    </div>
+
+                    <button onclick="startQRScanner()" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition shadow-md shadow-blue-600/20 flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-camera"></i>
+                        <span>เปิดกล้องสแกน QR Code</span>
+                    </button>
+
+                    <!-- กล้องสแกนในตัวหน้าเว็บ -->
+                    <div id="scannerContainer" class="hidden border border-slate-200 rounded-2xl overflow-hidden bg-slate-50 p-2">
+                        <div id="reader" class="w-full"></div>
+                        <button onclick="stopQRScanner()" class="mt-2 w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg transition">
+                            ปิดหน้ากล้อง
+                        </button>
+                    </div>
+                </div>
+
+                <!-- View: Form (Checkout / Return) -->
+                <div id="formView" class="hidden space-y-4 max-w-md mx-auto">
+                    <!-- Car Info Card -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <span id="carStatusBadge" class="text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">STATUS</span>
+                                <h2 class="text-xl font-bold text-slate-800 mt-2" id="carTitle">CAR-000</h2>
+                                <p class="text-xs text-slate-400 mt-0.5" id="carLicense">ป้ายทะเบียน: -</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">เลขไมล์ล่าสุด</span>
+                                <p class="text-2xl font-extrabold text-slate-900 leading-none mt-1" id="carMileage">0</p>
+                                <span class="text-[10px] text-slate-400">กิโลเมตร</span>
+                            </div>
+                        </div>
+                        <div class="pt-3 border-t border-slate-100 flex justify-between items-center text-xs text-slate-400">
+                            <span><i class="fa-regular fa-clock mr-1"></i> อัปเดตล่าสุด:</span>
+                            <span class="font-medium text-slate-600" id="carUpdated">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Checkout Form (รับรถ) -->
+                    <form id="checkoutForm" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 hidden space-y-4">
+                        <div class="flex items-center space-x-2 border-b border-slate-50 pb-3">
+                            <div class="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-bold">1</div>
+                            <h3 class="text-sm font-bold text-slate-800">กรอกข้อมูลผู้รับรถ</h3>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">ชื่อผู้เบิก</label>
+                                <input type="text" id="chk_userName" required placeholder="ชื่อผู้ขับรถ" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">แผนก / ฝ่าย</label>
+                                <input type="text" id="chk_department" required placeholder="เช่น ฝ่ายบุคคล, ฝ่ายขาย" class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">จุดหมายปลายทาง</label>
+                                <input type="text" id="chk_destination" required placeholder="เช่น ไปติดต่อราชการ, ตรวจไซต์งาน" class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">วัตถุประสงค์การเดินทาง</label>
+                                <input type="text" id="chk_purpose" required placeholder="ระบุเหตุผลในการใช้รถคันนี้" class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">เลขไมล์ก่อนออกเดินทาง (กม.)</label>
+                                <input type="number" id="chk_mileage" required class="w-full p-3 border border-blue-500 rounded-xl text-lg font-bold text-blue-600 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition">
+                                <p class="text-xs text-red-500 mt-1 hidden" id="chk_mileage_error"><i class="fa-solid fa-circle-exclamation mr-1"></i>ตัวเลขต้องไม่ต่ำกว่าค่าไมล์สะสมล่าสุด</p>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btnCheckout" class="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3.5 px-4 rounded-xl shadow-md shadow-emerald-600/10 transition transform active:scale-95 text-sm">
+                            <i class="fa-solid fa-check mr-1.5"></i> ลงทะเบียนรับรถออกเดินทาง
+                        </button>
+                    </form>
+
+                    <!-- Return Form (คืนรถ) -->
+                    <form id="returnForm" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 hidden space-y-4">
+                        <div class="flex items-center space-x-2 border-b border-slate-50 pb-3">
+                            <div class="w-6 h-6 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-xs font-bold">1</div>
+                            <h3 class="text-sm font-bold text-slate-800">รายละเอียดขากลับ</h3>
+                        </div>
+
+                        <div class="bg-red-50/50 p-4 rounded-xl border border-red-100/50 text-xs text-slate-600 space-y-1">
+                            <p><span class="font-bold text-red-600">ผู้ขับขี่ล่าสุด:</span> <span id="ret_activeUser" class="font-semibold text-slate-700">-</span></p>
+                            <p><span class="font-bold text-red-600">เลขไมล์ก่อนหน้านี้:</span> <span id="ret_activeMileage" class="font-bold text-slate-800">-</span> กิโลเมตร</p>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">เลขไมล์ตอบกลับถึงคลัง (กม.)</label>
+                                <input type="number" id="ret_mileage" required class="w-full p-3 border border-red-500 rounded-xl text-lg font-bold text-red-600 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition">
+                                <p class="text-xs text-red-500 mt-1 hidden" id="ret_mileage_error"><i class="fa-solid fa-triangle-exclamation mr-1"></i>ค่าเลขไมล์ขากลับต้องไม่น้อยกว่าเดิม</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">บันทึกรายงานเพิ่มเติม (ถ้ามี)</label>
+                                <textarea id="ret_remark" rows="2" placeholder="เช่น รายงานความเสียหาย หรือ แจ้งปริมาณน้ำมันคงเหลือ" class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 focus:outline-none transition"></textarea>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btnReturn" class="w-full mt-4 bg-red-600 hover:bg-red-700 text-white font-semibold py-3.5 px-4 rounded-xl shadow-md shadow-red-600/10 transition transform active:scale-95 text-sm">
+                            <i class="fa-solid fa-flag-checkered mr-1.5"></i> ลงทะเบียนส่งคืนพาหนะ
+                        </button>
+                    </form>
+                </div>
+
+                <!-- View: Dashboard (Admin) -->
+                <div id="dashboardView" class="hidden space-y-5 pb-6">
+                    <h2 class="text-lg font-bold text-slate-800 tracking-tight flex items-center"><i class="fa-solid fa-chart-pie mr-2 text-blue-600"></i>ข้อมูลสถิติรวม</h2>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between border-l-2 border-l-blue-500">
+                            <span class="text-[10px] font-bold tracking-wider text-blue-600 uppercase">พาหนะทั้งหมด</span>
+                            <p class="text-2xl font-black text-slate-800 mt-2" id="dash_total">0</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between border-l-2 border-l-emerald-500">
+                            <span class="text-[10px] font-bold tracking-wider text-emerald-600 uppercase">ว่างพร้อมใช้งาน</span>
+                            <p class="text-2xl font-black text-emerald-600 mt-2" id="dash_avail">0</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between border-l-2 border-l-red-500">
+                            <span class="text-[10px] font-bold tracking-wider text-red-500 uppercase">ออกเดินทางอยู่</span>
+                            <p class="text-2xl font-black text-red-500 mt-2" id="dash_using">0</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between border-l-2 border-l-slate-400">
+                            <span class="text-[10px] font-bold tracking-wider text-slate-600 uppercase">ลงทะเบียนวันนี้</span>
+                            <p class="text-2xl font-black text-slate-800 mt-2" id="dash_today">0</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">ปริมาณการใช้งานย้อนหลัง</h3>
+                        <canvas id="usageChart" height="120"></canvas>
+                    </div>
+                </div>
+
+                <!-- View: History (Feed รายการแบบโมบายแอปพลิเคชัน) -->
+                <div id="historyView" class="hidden space-y-4 pb-6">
+                    <h2 class="text-lg font-bold text-slate-800 tracking-tight flex items-center"><i class="fa-solid fa-clock-rotate-left mr-2 text-blue-600"></i>ประวัติลงทะเบียนล่าสุด</h2>
+                    <div id="historyFeed" class="space-y-3"></div>
+                </div>
+
+                <!-- View: Admin Login -->
+                <div id="adminLoginView" class="hidden max-w-sm mx-auto mt-10 p-6 bg-white rounded-2xl shadow-sm border border-slate-100">
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-100">
+                            <i class="fa-solid fa-user-shield text-2xl"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-slate-800">ผู้ดูแลระบบ (Admin)</h2>
+                        <p class="text-xs text-slate-500 mt-1">กรุณาเข้าสู่ระบบเพื่อจัดการข้อมูลยานพาหนะ</p>
+                    </div>
+                    <form id="adminLoginForm" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">ชื่อผู้ใช้งาน (Username)</label>
+                            <input type="text" id="admin_user" required class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">รหัสผ่าน (Password)</label>
+                            <input type="password" id="admin_pass" required class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500">
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition transform active:scale-95 text-sm">
+                            เข้าสู่ระบบจัดการ
+                        </button>
+                    </form>
+                </div>
+
+                <!-- View: Admin Panel -->
+                <div id="adminPanelView" class="hidden space-y-4 pb-6">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-lg font-bold text-slate-800 tracking-tight flex items-center"><i class="fa-solid fa-car text-blue-600 mr-2"></i>จัดการข้อมูลรถ</h2>
+                        <button onclick="showCarEditModal()" class="text-xs font-semibold text-white bg-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-700 transition shadow-sm flex items-center">
+                            <i class="fa-solid fa-plus mr-1"></i> เพิ่มรถใหม่
+                        </button>
+                    </div>
+                    <div id="adminCarsList" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+                </div>
+
+                <!-- View: Car Usage Report (Admin) -->
+                <div id="carUsageView" class="hidden space-y-4 pb-6">
+                    <div class="flex justify-between items-center flex-wrap gap-2">
+                        <h2 class="text-lg font-bold text-slate-800 tracking-tight flex items-center"><i class="fa-solid fa-chart-line text-blue-600 mr-2"></i>สถิติการใช้รถแต่ละคัน</h2>
+                        <button onclick="exportCarUsageCSV()" class="text-xs font-semibold text-white bg-emerald-600 px-3 py-1.5 rounded-lg hover:bg-emerald-700 transition shadow-sm flex items-center">
+                            <i class="fa-solid fa-file-csv mr-1"></i> ส่งออก CSV
+                        </button>
+                    </div>
+
+                    <!-- Filter Card -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 space-y-3">
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider"><i class="fa-solid fa-filter mr-1 text-blue-600"></i>ตัวกรองข้อมูล</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                            <!-- Filter Mode -->
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">ประเภทช่วงเวลา</label>
+                                <select id="cu_filterMode" onchange="onUsageFilterModeChange()" class="w-full p-2.5 border border-slate-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none">
+                                    <option value="month">เดือน</option>
+                                    <option value="year">ปี</option>
+                                    <option value="range">ช่วงวันที่ (วันที่เริ่ม-วันที่สิ้นสุด)</option>
+                                </select>
+                            </div>
+
+                            <!-- Month Picker -->
+                            <div id="cu_monthField">
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">เดือน/ปี</label>
+                                <input type="month" id="cu_month" class="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none">
+                            </div>
+
+                            <!-- Year Picker -->
+                            <div id="cu_yearField" class="hidden">
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">ปี (ค.ศ.)</label>
+                                <input type="number" id="cu_year" min="2000" max="2100" class="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none">
+                            </div>
+
+                            <!-- Range Pickers -->
+                            <div id="cu_startField" class="hidden">
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">วันที่เริ่ม</label>
+                                <input type="date" id="cu_start" class="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none">
+                            </div>
+                            <div id="cu_endField" class="hidden">
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">วันที่สิ้นสุด</label>
+                                <input type="date" id="cu_end" class="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none">
+                            </div>
+
+                            <!-- Car Selector -->
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">เลือกพาหนะ</label>
+                                <select id="cu_carFilter" class="w-full p-2.5 border border-slate-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none">
+                                    <option value="ALL">ทุกคัน</option>
+                                </select>
+                            </div>
+
+                            <!-- Apply Btn -->
+                            <div class="flex items-end">
+                                <button onclick="loadCarUsageReport()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition flex items-center justify-center">
+                                    <i class="fa-solid fa-magnifying-glass mr-1.5"></i>ค้นหา
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Summary KPIs -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-2 border-l-blue-500">
+                            <span class="text-[10px] font-bold tracking-wider text-blue-600 uppercase">จำนวนครั้งที่ใช้</span>
+                            <p class="text-2xl font-black text-slate-800 mt-2" id="cu_totalTrips">0</p>
+                            <span class="text-[10px] text-slate-400">ครั้ง</span>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-2 border-l-emerald-500">
+                            <span class="text-[10px] font-bold tracking-wider text-emerald-600 uppercase">ระยะทางรวม</span>
+                            <p class="text-2xl font-black text-emerald-600 mt-2" id="cu_totalDistance">0</p>
+                            <span class="text-[10px] text-slate-400">กิโลเมตร</span>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-2 border-l-red-500">
+                            <span class="text-[10px] font-bold tracking-wider text-red-500 uppercase">กำลังเดินทาง</span>
+                            <p class="text-2xl font-black text-red-500 mt-2" id="cu_ongoingTrips">0</p>
+                            <span class="text-[10px] text-slate-400">รายการ</span>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 border-l-2 border-l-slate-400">
+                            <span class="text-[10px] font-bold tracking-wider text-slate-600 uppercase">เฉลี่ย/ครั้ง</span>
+                            <p class="text-2xl font-black text-slate-800 mt-2" id="cu_avgDistance">0</p>
+                            <span class="text-[10px] text-slate-400">กม./ครั้ง</span>
+                        </div>
+                    </div>
+
+                    <!-- Chart -->
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4"><i class="fa-solid fa-chart-column mr-1 text-blue-600"></i>เปรียบเทียบการใช้งานแต่ละคัน</h3>
+                        <canvas id="carUsageChart" height="120"></canvas>
+                    </div>
+
+                    <!-- List -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                        <div class="px-4 py-3 border-b border-slate-100 flex justify-between items-center">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider"><i class="fa-solid fa-list mr-1 text-blue-600"></i>รายการการใช้รถ</h3>
+                            <span id="cu_listCount" class="text-[10px] text-slate-500 font-semibold">0 รายการ</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead class="bg-slate-50 text-[10px] uppercase tracking-wider text-slate-500">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left">วันที่</th>
+                                        <th class="px-3 py-2 text-left">รหัสรถ</th>
+                                        <th class="px-3 py-2 text-left">ผู้ใช้</th>
+                                        <th class="px-3 py-2 text-left">แผนก</th>
+                                        <th class="px-3 py-2 text-left">ปลายทาง</th>
+                                        <th class="px-3 py-2 text-right">ระยะทาง</th>
+                                        <th class="px-3 py-2 text-center">สถานะ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cu_listBody" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal: Edit Car -->
+                <div id="carEditModal" class="hidden fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all">
+                        <div class="flex justify-between items-center p-4 border-b border-slate-100">
+                            <h3 class="font-bold text-slate-800" id="carModalTitle">เพิ่มข้อมูลรถใหม่</h3>
+                            <button onclick="closeCarEditModal()" class="text-slate-400 hover:text-red-500 transition p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+                        </div>
+                        <form id="carEditForm" class="p-4 space-y-3">
+                            <input type="hidden" id="edit_original_id">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">รหัสอ้างอิงรถ (Car ID)</label>
+                                <input type="text" id="edit_carId" required placeholder="เช่น CAR001" class="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">ชื่อเรียก / รุ่นรถ</label>
+                                <input type="text" id="edit_carName" required class="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">ป้ายทะเบียน</label>
+                                <input type="text" id="edit_licensePlate" required class="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">เลขไมล์เริ่มต้น</label>
+                                    <input type="number" id="edit_mileage" required class="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">สถานะรถ</label>
+                                    <select id="edit_status" class="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none bg-white">
+                                        <option value="AVAILABLE">ว่างพร้อมใช้</option>
+                                        <option value="USING">กำลังใช้งาน</option>
+                                        <option value="MAINTENANCE">เข้าซ่อมบำรุง</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition transform active:scale-95 text-sm">
+                                บันทึกข้อมูลรถ
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Modal: QR Code Generator -->
+                <div id="qrModal" class="hidden fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform transition-all text-center p-6 relative">
+                        <button onclick="closeQrModal()" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+                        <h3 class="font-bold text-slate-800 text-lg mb-1" id="qrTitle">QR Code รถ</h3>
+                        <p class="text-xs text-slate-500 mb-5">พิมพ์และนำไปติดบริเวณหน้ารถคันนี้</p>
+                        <div class="bg-white p-2 rounded-xl border border-slate-100 shadow-sm inline-block mx-auto mb-4">
+                            <img id="qrImage" src="" alt="QR Code" class="w-48 h-48 mx-auto object-contain">
+                        </div>
+                        <div class="flex justify-center space-x-2">
+                            <button onclick="downloadQR()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition flex items-center">
+                                <i class="fa-solid fa-download mr-1.5"></i> ดาวน์โหลด
+                            </button>
+                            <button onclick="copyQrLink()" class="px-4 py-2 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg text-sm font-semibold hover:bg-blue-100 transition flex items-center">
+                                <i class="fa-solid fa-link mr-1.5"></i> คัดลอกลิงก์
+                            </button>
+                        </div>
+                        <input type="hidden" id="qrCurrentLink">
+                    </div>
+                </div>
+
+            </main>
+        </div>
     </div>
 
-    <!-- Main Container -->
-    <main class="max-w-md mx-auto px-4 pt-4 hidden" id="mainApp">
-        
-        <!-- View: Error -->
-        <div id="errorView" class="hidden text-center py-12 px-6 bg-white rounded-2xl shadow-sm border border-slate-100">
-            <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-100">
-                <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
-            </div>
-            <h2 class="text-lg font-bold text-slate-800 mb-1">พบข้อผิดพลาดการเชื่อมต่อ</h2>
-            <p class="text-sm text-slate-500 mb-6 leading-relaxed" id="errorText">กรุณาลองใหม่อีกครั้ง</p>
-            <button onclick="window.location.reload()" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl transition shadow-sm active:scale-95">
-                <i class="fa-solid fa-rotate-right mr-1.5"></i> ตกลง / ลองอีกครั้ง
-            </button>
-        </div>
-
-        <!-- View: Empty State & Live Scan (กล้องสแกนจริง) -->
-        <div id="emptyStateView" class="hidden text-center py-16 px-6 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-6">
-            <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border border-emerald-100">
-                <i class="fa-solid fa-qrcode text-2xl"></i>
-            </div>
-            <div>
-                <h2 class="text-lg font-bold text-slate-800">พร้อมลงทะเบียนสแกนรถ</h2>
-                <p class="text-sm text-slate-400 max-w-[240px] mx-auto leading-relaxed mt-1">แตะปุ่มด้านล่างเพื่อเปิดกล้องมือถือสแกน QR Code ที่ติดบนตัวรถ</p>
-            </div>
-            
-            <button onclick="startQRScanner()" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition shadow-md shadow-emerald-600/20 flex items-center justify-center space-x-2">
-                <i class="fa-solid fa-camera"></i>
-                <span>เปิดกล้องสแกน QR Code</span>
-            </button>
-
-            <!-- กล้องสแกนในตัวหน้าเว็บ -->
-            <div id="scannerContainer" class="hidden border border-slate-200 rounded-2xl overflow-hidden bg-slate-50 p-2">
-                <div id="reader" class="w-full"></div>
-                <button onclick="stopQRScanner()" class="mt-2 w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg transition">
-                    ปิดหน้ากล้อง
-                </button>
-            </div>
-        </div>
-
-        <!-- View: Form (Checkout / Return) -->
-        <div id="formView" class="hidden space-y-4">
-            <!-- Car Info Card -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
-                <div class="flex justify-between items-center mb-4">
-                    <div>
-                        <span id="carStatusBadge" class="text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">STATUS</span>
-                        <h2 class="text-xl font-bold text-slate-800 mt-2" id="carTitle">CAR-000</h2>
-                        <p class="text-xs text-slate-400 mt-0.5" id="carLicense">ป้ายทะเบียน: -</p>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">เลขไมล์ล่าสุด</span>
-                        <p class="text-2xl font-extrabold text-slate-900 leading-none mt-1" id="carMileage">0</p>
-                        <span class="text-[10px] text-slate-400">กิโลเมตร</span>
-                    </div>
-                </div>
-                <div class="pt-3 border-t border-slate-100 flex justify-between items-center text-xs text-slate-400">
-                    <span><i class="fa-regular fa-clock mr-1"></i> อัปเดตล่าสุด:</span>
-                    <span class="font-medium text-slate-600" id="carUpdated">-</span>
-                </div>
-            </div>
-
-            <!-- Checkout Form (รับรถ) -->
-            <form id="checkoutForm" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 hidden space-y-4">
-                <div class="flex items-center space-x-2 border-b border-slate-50 pb-3">
-                    <div class="w-6 h-6 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs font-bold">1</div>
-                    <h3 class="text-sm font-bold text-slate-800">กรอกข้อมูลผู้รับรถ</h3>
-                </div>
-                
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">ชื่อผู้เบิก</label>
-                        <input type="text" id="chk_userName" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">แผนก / ฝ่าย</label>
-                        <input type="text" id="chk_department" required placeholder="เช่น ฝ่ายบุคคล, ฝ่ายขาย" class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">จุดหมายปลายทาง</label>
-                        <input type="text" id="chk_destination" required placeholder="เช่น ไปติดต่อราชการ, ตรวจไซต์งาน" class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">วัตถุประสงค์การเดินทาง</label>
-                        <input type="text" id="chk_purpose" required placeholder="ระบุเหตุผลในการใช้รถคันนี้" class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">เลขไมล์ก่อนออกเดินทาง (กม.)</label>
-                        <input type="number" id="chk_mileage" required class="w-full p-3 border border-emerald-500 rounded-xl text-lg font-bold text-emerald-600 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition">
-                        <p class="text-xs text-red-500 mt-1 hidden" id="chk_mileage_error"><i class="fa-solid fa-circle-exclamation mr-1"></i>ตัวเลขต้องไม่ต่ำกว่าค่าไมล์สะสมล่าสุด</p>
-                    </div>
-                </div>
-
-                <button type="submit" id="btnCheckout" class="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3.5 px-4 rounded-xl shadow-md shadow-emerald-600/10 transition transform active:scale-95 text-sm">
-                    <i class="fa-solid fa-check mr-1.5"></i> ลงทะเบียนรับรถออกเดินทาง
-                </button>
-            </form>
-
-            <!-- Return Form (คืนรถ) -->
-            <form id="returnForm" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 hidden space-y-4">
-                <div class="flex items-center space-x-2 border-b border-slate-50 pb-3">
-                    <div class="w-6 h-6 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-xs font-bold">1</div>
-                    <h3 class="text-sm font-bold text-slate-800">รายละเอียดขากลับ</h3>
-                </div>
-
-                <div class="bg-red-50/50 p-4 rounded-xl border border-red-100/50 text-xs text-slate-600 space-y-1">
-                    <p><span class="font-bold text-red-600">ผู้ขับขี่ล่าสุด:</span> <span id="ret_activeUser" class="font-semibold text-slate-700">-</span></p>
-                    <p><span class="font-bold text-red-600">เลขไมล์ก่อนหน้านี้:</span> <span id="ret_activeMileage" class="font-bold text-slate-800">-</span> กิโลเมตร</p>
-                </div>
-
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">เลขไมล์ตอบกลับถึงคลัง (กม.)</label>
-                        <input type="number" id="ret_mileage" required class="w-full p-3 border border-red-500 rounded-xl text-lg font-bold text-red-600 focus:ring-2 focus:ring-red-500/20 focus:outline-none transition">
-                        <p class="text-xs text-red-500 mt-1 hidden" id="ret_mileage_error"><i class="fa-solid fa-triangle-exclamation mr-1"></i>ค่าเลขไมล์ขากลับต้องไม่น้อยกว่าเดิม</p>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">บันทึกรายงานเพิ่มเติม (ถ้ามี)</label>
-                        <textarea id="ret_remark" rows="2" placeholder="เช่น รายงานความเสียหาย หรือ แจ้งปริมาณน้ำมันคงเหลือ" class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 focus:outline-none transition"></textarea>
-                    </div>
-                </div>
-
-                <button type="submit" id="btnReturn" class="w-full mt-4 bg-red-600 hover:bg-red-700 text-white font-semibold py-3.5 px-4 rounded-xl shadow-md shadow-red-600/10 transition transform active:scale-95 text-sm">
-                    <i class="fa-solid fa-flag-checkered mr-1.5"></i> ลงทะเบียนส่งคืนพาหนะ
-                </button>
-            </form>
-        </div>
-
-        <!-- View: Dashboard (Admin) -->
-        <div id="dashboardView" class="hidden space-y-5 pb-6">
-            <h2 class="text-lg font-bold text-slate-800 tracking-tight flex items-center"><i class="fa-solid fa-chart-pie mr-2 text-emerald-600"></i>ข้อมูลสถิติรวม</h2>
-            
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-                    <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase">พาหนะทั้งหมด</span>
-                    <p class="text-2xl font-black text-slate-800 mt-2" id="dash_total">0</p>
-                </div>
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-                    <span class="text-[10px] font-bold tracking-wider text-emerald-600 uppercase">ว่างพร้อมใช้งาน</span>
-                    <p class="text-2xl font-black text-emerald-600 mt-2" id="dash_avail">0</p>
-                </div>
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between border-l-2 border-l-red-500">
-                    <span class="text-[10px] font-bold tracking-wider text-red-500 uppercase">ออกเดินทางอยู่</span>
-                    <p class="text-2xl font-black text-red-500 mt-2" id="dash_using">0</p>
-                </div>
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-                    <span class="text-[10px] font-bold tracking-wider text-slate-600 uppercase">ลงทะเบียนวันนี้</span>
-                    <p class="text-2xl font-black text-slate-800 mt-2" id="dash_today">0</p>
-                </div>
-            </div>
-
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">ปริมาณการใช้งานย้อนหลัง</h3>
-                <canvas id="usageChart" height="180"></canvas>
-            </div>
-        </div>
-
-        <!-- View: History (Feed รายการแบบโมบายแอปพลิเคชัน) -->
-        <div id="historyView" class="hidden space-y-4 pb-6">
-            <h2 class="text-lg font-bold text-slate-800 tracking-tight flex items-center"><i class="fa-solid fa-clock-rotate-left mr-2 text-emerald-600"></i>ประวัติลงทะเบียนล่าสุด</h2>
-            <div id="historyFeed" class="space-y-3"></div>
-        </div>
-
-        <!-- View: Admin Login -->
-        <div id="adminLoginView" class="hidden max-w-sm mx-auto mt-10 p-6 bg-white rounded-2xl shadow-sm border border-slate-100">
-            <div class="text-center mb-6">
-                <div class="w-16 h-16 bg-slate-100 text-slate-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fa-solid fa-user-shield text-2xl"></i>
-                </div>
-                <h2 class="text-xl font-bold text-slate-800">ผู้ดูแลระบบ (Admin)</h2>
-                <p class="text-xs text-slate-500 mt-1">กรุณาเข้าสู่ระบบเพื่อจัดการข้อมูลยานพาหนะ</p>
-            </div>
-            <form id="adminLoginForm" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">ชื่อผู้ใช้งาน (Username)</label>
-                    <input type="text" id="admin_user" required class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">รหัสผ่าน (Password)</label>
-                    <input type="password" id="admin_pass" required class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
-                </div>
-                <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition transform active:scale-95 text-sm">
-                    เข้าสู่ระบบจัดการ
-                </button>
-            </form>
-        </div>
-
-        <!-- View: Admin Panel -->
-        <div id="adminPanelView" class="hidden space-y-4 pb-6">
-            <div class="flex justify-between items-center">
-                <h2 class="text-lg font-bold text-slate-800 tracking-tight flex items-center"><i class="fa-solid fa-car text-emerald-600 mr-2"></i>จัดการข้อมูลรถ</h2>
-                <button onclick="showCarEditModal()" class="text-xs font-semibold text-white bg-emerald-600 px-3 py-1.5 rounded-lg hover:bg-emerald-700 transition shadow-sm flex items-center">
-                    <i class="fa-solid fa-plus mr-1"></i> เพิ่มรถใหม่
-                </button>
-            </div>
-            <div id="adminCarsList" class="space-y-3"></div>
-        </div>
-
-        <!-- Modal: Edit Car -->
-        <div id="carEditModal" class="hidden fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all">
-                <div class="flex justify-between items-center p-4 border-b border-slate-100">
-                    <h3 class="font-bold text-slate-800" id="carModalTitle">เพิ่มข้อมูลรถใหม่</h3>
-                    <button onclick="closeCarEditModal()" class="text-slate-400 hover:text-red-500 transition p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
-                </div>
-                <form id="carEditForm" class="p-4 space-y-3">
-                    <input type="hidden" id="edit_original_id">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">รหัสอ้างอิงรถ (Car ID)</label>
-                        <input type="text" id="edit_carId" required placeholder="เช่น CAR001" class="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">ชื่อเรียก / รุ่นรถ</label>
-                        <input type="text" id="edit_carName" required class="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">ป้ายทะเบียน</label>
-                        <input type="text" id="edit_licensePlate" required class="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:outline-none">
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">เลขไมล์เริ่มต้น</label>
-                            <input type="number" id="edit_mileage" required class="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">สถานะรถ</label>
-                            <select id="edit_status" class="w-full p-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/20 focus:outline-none bg-white">
-                                <option value="AVAILABLE">ว่างพร้อมใช้</option>
-                                <option value="USING">กำลังใช้งาน</option>
-                                <option value="MAINTENANCE">เข้าซ่อมบำรุง</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button type="submit" class="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition transform active:scale-95 text-sm">
-                        บันทึกข้อมูลรถ
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Modal: QR Code Generator -->
-        <div id="qrModal" class="hidden fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform transition-all text-center p-6 relative">
-                <button onclick="closeQrModal()" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
-                <h3 class="font-bold text-slate-800 text-lg mb-1" id="qrTitle">QR Code รถ</h3>
-                <p class="text-xs text-slate-500 mb-5">พิมพ์และนำไปติดบริเวณหน้ารถคันนี้</p>
-                <div class="bg-white p-2 rounded-xl border border-slate-100 shadow-sm inline-block mx-auto mb-4">
-                    <img id="qrImage" src="" alt="QR Code" class="w-48 h-48 mx-auto object-contain">
-                </div>
-                <div class="flex justify-center space-x-2">
-                    <button onclick="downloadQR()" class="px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-semibold hover:bg-slate-900 transition flex items-center">
-                        <i class="fa-solid fa-download mr-1.5"></i> ดาวน์โหลด
-                    </button>
-                    <button onclick="copyQrLink()" class="px-4 py-2 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg text-sm font-semibold hover:bg-emerald-100 transition flex items-center">
-                        <i class="fa-solid fa-link mr-1.5"></i> คัดลอกลิงก์
-                    </button>
-                </div>
-                <input type="hidden" id="qrCurrentLink">
-            </div>
-        </div>
-
-    </main>
-
-    <!-- Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-slate-200/60 z-50 flex justify-around items-center py-2 px-3 shadow-lg max-w-md mx-auto">
-        <button onclick="switchTab('form')" id="tab-form" class="flex flex-col items-center flex-1 py-1.5 text-emerald-600 transition-colors duration-200">
-            <div class="relative flex items-center justify-center">
-                <i class="fa-solid fa-qrcode text-lg mb-1"></i>
-            </div>
+    <!-- ===================== Bottom Navigation (Mobile only) ===================== -->
+    <nav id="bottomNav" class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-slate-200/60 z-50 flex justify-around items-center py-2 px-3 shadow-lg">
+        <button onclick="switchTab('form')" id="tab-form" class="nav-btn flex flex-col items-center flex-1 py-1.5 text-blue-600 transition-colors duration-200">
+            <i class="fa-solid fa-qrcode text-lg mb-1"></i>
             <span class="text-[10px] font-medium tracking-tight">สแกนบันทึก</span>
         </button>
-        <button onclick="switchTab('dashboard')" id="tab-dashboard" class="flex flex-col items-center flex-1 py-1.5 text-slate-400 hover:text-slate-600 transition-colors duration-200">
+        <button onclick="switchTab('dashboard')" id="tab-dashboard" class="nav-btn flex flex-col items-center flex-1 py-1.5 text-slate-400 hover:text-slate-600 transition-colors duration-200">
             <i class="fa-solid fa-chart-bar text-lg mb-1"></i>
             <span class="text-[10px] font-medium tracking-tight">แดชบอร์ด</span>
         </button>
-        <button onclick="switchTab('history')" id="tab-history" class="flex flex-col items-center flex-1 py-1.5 text-slate-400 hover:text-slate-600 transition-colors duration-200">
+
+        <!-- Center Admin Hamburger Button (only shows for admins) -->
+        <button id="adminFab" onclick="toggleAdminGridPanel()" class="hidden flex-col items-center flex-1 py-1.5 transition">
+            <div class="fab-center w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center text-lg hover:bg-blue-700 transition">
+                <i class="fa-solid fa-bars"></i>
+            </div>
+            <span class="text-[10px] font-medium tracking-tight text-blue-600 mt-0.5">เมนูจัดการ</span>
+        </button>
+
+        <button onclick="switchTab('history')" id="tab-history" class="nav-btn flex flex-col items-center flex-1 py-1.5 text-slate-400 hover:text-slate-600 transition-colors duration-200">
             <i class="fa-solid fa-list-ul text-lg mb-1"></i>
             <span class="text-[10px] font-medium tracking-tight">ประวัติสัญจร</span>
         </button>
     </nav>
 
-    <!-- JS Application Logic -->
+    <!-- ===================== Admin Grid Panel (Slide-up from bottom on mobile) ===================== -->
+    <div id="adminGridPanel" class="hidden fixed inset-0 z-[55] lg:hidden">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="toggleAdminGridPanel()"></div>
+        <!-- Panel -->
+        <div class="anim-slide-up absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl p-5 pb-28 max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h3 class="text-base font-bold text-slate-800">เมนูจัดการระบบ</h3>
+                    <p class="text-[11px] text-slate-500">เลือกเมนูที่ต้องการใช้งาน</p>
+                </div>
+                <button onclick="toggleAdminGridPanel()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-500 transition flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+                <button onclick="adminGridGo('admin')" class="flex flex-col items-center justify-center p-4 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-2xl transition">
+                    <div class="w-11 h-11 rounded-xl bg-blue-600 text-white flex items-center justify-center mb-2 shadow-sm shadow-blue-600/30">
+                        <i class="fa-solid fa-car"></i>
+                    </div>
+                    <span class="text-[11px] font-semibold text-slate-700 text-center leading-tight">จัดการ<br>ข้อมูลรถ</span>
+                </button>
+
+                <button onclick="adminGridGo('carUsage')" class="flex flex-col items-center justify-center p-4 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-2xl transition">
+                    <div class="w-11 h-11 rounded-xl bg-emerald-600 text-white flex items-center justify-center mb-2 shadow-sm shadow-emerald-600/30">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <span class="text-[11px] font-semibold text-slate-700 text-center leading-tight">สถิติ<br>การใช้รถ</span>
+                </button>
+
+                <button onclick="adminGridGo('dashboard')" class="flex flex-col items-center justify-center p-4 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-2xl transition">
+                    <div class="w-11 h-11 rounded-xl bg-blue-500 text-white flex items-center justify-center mb-2 shadow-sm">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </div>
+                    <span class="text-[11px] font-semibold text-slate-700 text-center leading-tight">แดชบอร์ด<br>ภาพรวม</span>
+                </button>
+
+                <button onclick="adminAddNewCar()" class="flex flex-col items-center justify-center p-4 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-2xl transition">
+                    <div class="w-11 h-11 rounded-xl bg-emerald-500 text-white flex items-center justify-center mb-2 shadow-sm">
+                        <i class="fa-solid fa-plus"></i>
+                    </div>
+                    <span class="text-[11px] font-semibold text-slate-700 text-center leading-tight">เพิ่ม<br>รถใหม่</span>
+                </button>
+
+                <button onclick="adminGridGo('history')" class="flex flex-col items-center justify-center p-4 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-2xl transition">
+                    <div class="w-11 h-11 rounded-xl bg-slate-600 text-white flex items-center justify-center mb-2 shadow-sm">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <span class="text-[11px] font-semibold text-slate-700 text-center leading-tight">ประวัติ<br>สัญจร</span>
+                </button>
+
+                <button onclick="adminLogout()" class="flex flex-col items-center justify-center p-4 bg-red-50 hover:bg-red-100 border border-red-100 rounded-2xl transition">
+                    <div class="w-11 h-11 rounded-xl bg-red-600 text-white flex items-center justify-center mb-2 shadow-sm shadow-red-600/30">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </div>
+                    <span class="text-[11px] font-semibold text-slate-700 text-center leading-tight">ออกจาก<br>โหมดแอดมิน</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== JS Application Logic ===================== -->
     <script>
         // 🚨 ระบุ URL ของ GOOGLE APPS SCRIPT WEB APP ที่นี่หลังจากทำ DEPLOY
         const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwXE1mpYnQH7haqVM7r2hajYRQoawQQsGLOSf7DIUpry0fd-6mmjSzImN7HynyCn6M/exec";
@@ -366,9 +643,12 @@
             activeLog: null,
             currentTab: 'form',
             isAdminLogged: false,
-            adminCarsList: []
+            adminCarsList: [],
+            allLogs: [],            // เก็บประวัติทั้งหมดสำหรับใช้คำนวณ Report
+            carUsageData: []        // ข้อมูลที่ผ่านการ Filter แล้ว
         };
         let myChart = null;
+        let carUsageChart = null;
         let html5QrScanner = null;
 
         const Toast = Swal.mixin({
@@ -434,41 +714,68 @@
             document.getElementById('topUserBadge').classList.remove('hidden');
             document.getElementById('userNameDisplay').innerText = STATE.user.Name;
 
+            // Sidebar user badge (Desktop)
+            document.getElementById('sideUserBadge').classList.remove('hidden');
+            document.getElementById('sideUserName').innerText = STATE.user.Name;
+            document.getElementById('sideUserRole').innerText = STATE.user.Role || 'USER';
+
             renderNavigation();
         }
 
         // ระบบสลับหน้าแท็บเมนูด้านล่าง
         function switchTab(tabName) {
             STATE.currentTab = tabName;
-            
+
+            // ปุ่มล่าง (Bottom nav) — เฉพาะแท็บที่อยู่ในนาวิเกชันมือถือ
             const tabs = ['form', 'dashboard', 'history'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`tab-${t}`);
                 if (btn) {
                     if (t === tabName) {
                         btn.classList.remove('text-slate-400');
-                        btn.classList.add('text-emerald-600');
+                        btn.classList.add('text-blue-600');
                     } else {
-                        btn.classList.remove('text-emerald-600');
+                        btn.classList.remove('text-blue-600');
                         btn.classList.add('text-slate-400');
                     }
                 }
             });
 
+            // Sidebar (Desktop) - highlight ปุ่ม sidebar ที่ตรงกัน
+            document.querySelectorAll('.side-nav-btn').forEach(btn => {
+                const isActive = btn.dataset.side === tabName;
+                btn.classList.toggle('bg-blue-600', isActive);
+                btn.classList.toggle('text-white', isActive);
+                btn.classList.toggle('shadow-sm', isActive);
+                btn.classList.toggle('shadow-blue-600/20', isActive);
+                btn.classList.toggle('text-slate-600', !isActive);
+            });
+
             // ปิดกล้องทุกครั้งที่เปลี่ยนหน้าเพื่อประหยัดแบตเตอรี่มือถือ
             stopQRScanner();
+
+            // ปิด Admin Grid Panel ถ้าเปิดอยู่
+            const panel = document.getElementById('adminGridPanel');
+            if (!panel.classList.contains('hidden')) panel.classList.add('hidden');
 
             renderNavigation();
         }
 
         function renderNavigation() {
-            document.getElementById('formView').classList.add('hidden');
-            document.getElementById('emptyStateView').classList.add('hidden');
-            document.getElementById('dashboardView').classList.add('hidden');
-            document.getElementById('historyView').classList.add('hidden');
-            document.getElementById('errorView').classList.add('hidden');
-            document.getElementById('adminLoginView').classList.add('hidden');
-            document.getElementById('adminPanelView').classList.add('hidden');
+            // ซ่อนทุก View ก่อน
+            ['formView','emptyStateView','dashboardView','historyView','errorView','adminLoginView','adminPanelView','carUsageView']
+                .forEach(id => document.getElementById(id).classList.add('hidden'));
+
+            // อัปเดต Header title สำหรับ Desktop
+            const titleMap = {
+                form: STATE.car ? 'บันทึกการใช้รถ' : 'สแกน QR Code',
+                dashboard: 'ภาพรวมแดชบอร์ด',
+                history: 'ประวัติการสัญจร',
+                admin: 'จัดการข้อมูลรถ',
+                carUsage: 'สถิติการใช้รถแต่ละคัน'
+            };
+            const titleEl = document.getElementById('pageHeaderTitle');
+            if (titleEl) titleEl.innerText = titleMap[STATE.currentTab] || 'SmartFleet';
 
             if (STATE.currentTab === 'form') {
                 if (STATE.car) {
@@ -487,13 +794,19 @@
                 } else {
                     document.getElementById('adminLoginView').classList.remove('hidden');
                 }
+            } else if (STATE.currentTab === 'carUsage') {
+                if (STATE.isAdminLogged) {
+                    showCarUsageView();
+                } else {
+                    document.getElementById('adminLoginView').classList.remove('hidden');
+                }
             }
         }
 
         // --- ระบบกล้องสแกน QR Code จริงผ่านหน้าเว็บ ---
         function startQRScanner() {
             document.getElementById('scannerContainer').classList.remove('hidden');
-            
+
             html5QrScanner = new Html5Qrcode("reader");
             const config = { fps: 10, qrbox: { width: 250, height: 250 } };
 
@@ -547,7 +860,7 @@
                     icon: 'error',
                     title: 'เปิดกล้องไม่ได้',
                     text: 'กรุณาตรวจสอบว่าได้กดยืนยันอนุญาตแชร์การใช้กล้องให้กับเว็บไซต์นี้แล้วหรือไม่',
-                    confirmButtonColor: '#10b981'
+                    confirmButtonColor: '#2563eb'
                 });
                 document.getElementById('scannerContainer').classList.add('hidden');
             });
@@ -581,7 +894,7 @@
             if (STATE.car.Status === 'AVAILABLE') {
                 badge.innerText = 'ว่างพร้อมใช้';
                 badge.className = 'text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider bg-emerald-100 text-emerald-800';
-                
+
                 document.getElementById('checkoutForm').classList.remove('hidden');
                 document.getElementById('chk_userName').value = STATE.user.Name;
                 document.getElementById('chk_mileage').value = STATE.car.CurrentMileage;
@@ -590,7 +903,7 @@
             } else if (STATE.car.Status === 'USING') {
                 badge.innerText = 'กำลังใช้เดินทาง';
                 badge.className = 'text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider bg-red-100 text-red-800';
-                
+
                 document.getElementById('returnForm').classList.remove('hidden');
                 document.getElementById('ret_activeUser').innerText = STATE.activeLog ? STATE.activeLog.UserName : STATE.user.Name;
                 const outMileage = STATE.activeLog ? STATE.activeLog.MileageOut : STATE.car.CurrentMileage;
@@ -612,7 +925,7 @@
                 document.getElementById('chk_mileage_error').classList.remove('hidden');
                 return;
             }
-            
+
             Swal.fire({
                 title: 'ยืนยันเดินทาง?',
                 text: "กรุณาตรวจเช็คสภาพความเรียบร้อยรอบพาหนะก่อนออกตัว",
@@ -647,7 +960,7 @@
             e.preventDefault();
             const outMileage = STATE.activeLog ? Number(STATE.activeLog.MileageOut) : Number(STATE.car.CurrentMileage);
             const inMileage = Number(document.getElementById('ret_mileage').value);
-            
+
             if (inMileage < outMileage) {
                 document.getElementById('ret_mileage_error').classList.remove('hidden');
                 return;
@@ -692,7 +1005,7 @@
         function renderDashboard(data) {
             Swal.close();
             document.getElementById('dashboardView').classList.remove('hidden');
-            
+
             document.getElementById('dash_total').innerText = data.stats.totalCars;
             document.getElementById('dash_avail').innerText = data.stats.availableCars;
             document.getElementById('dash_using').innerText = data.stats.usingCars;
@@ -707,18 +1020,19 @@
                     datasets: [{
                         label: 'สถิติจำนวนครั้งสัญจร',
                         data: data.chart.data,
-                        backgroundColor: '#10b981',
+                        backgroundColor: '#2563eb',
                         borderWidth: 0,
                         borderRadius: 8
                     }]
                 },
-                options: { 
-                    responsive: true, 
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
-                    scales: { 
+                    scales: {
                         y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { stepSize: 1 } },
                         x: { grid: { display: false } }
-                    } 
+                    }
                 }
             });
         }
@@ -777,21 +1091,35 @@
             showLoadingOverlay('กำลังตรวจสอบสิทธิ์...');
             const u = document.getElementById('admin_user').value;
             const p = document.getElementById('admin_pass').value;
-            
+
             fetchAPI('adminLogin', { username: u, password: p })
                 .then(() => {
                     Swal.close();
                     STATE.isAdminLogged = true;
+                    // เปิดส่วน Admin (Sidebar + FAB)
+                    document.getElementById('sideAdminGroup').classList.remove('hidden');
+                    document.getElementById('adminFab').classList.remove('hidden');
+                    document.getElementById('adminFab').classList.add('flex');
                     loadAdminPanel();
                 })
                 .catch(err => handleServerErr(err.message));
         });
 
+        function adminLogout() {
+            STATE.isAdminLogged = false;
+            document.getElementById('sideAdminGroup').classList.add('hidden');
+            document.getElementById('adminFab').classList.add('hidden');
+            document.getElementById('adminFab').classList.remove('flex');
+            toggleAdminGridPanel(); // ปิด Panel
+            switchTab('form');
+            Toast.fire({ icon: 'info', title: 'ออกจากโหมดผู้ดูแลเรียบร้อย' });
+        }
+
         function loadAdminPanel() {
             document.getElementById('adminLoginView').classList.add('hidden');
             document.getElementById('adminPanelView').classList.remove('hidden');
             showLoadingOverlay('กำลังดึงข้อมูลคลังรถ...');
-            
+
             fetchAPI('getAdminCars')
                 .then(renderAdminCars)
                 .catch(err => handleServerErr(err.message));
@@ -823,7 +1151,7 @@
                             <button onclick="showCarEditModal('${car.CarID}')" class="flex-1 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-100 transition border border-slate-200">
                                 <i class="fa-solid fa-pen mr-1"></i> แก้ไข
                             </button>
-                            <button onclick="showQRCode('${car.CarID}', '${car.CarName}')" class="flex-1 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg text-xs font-semibold hover:bg-emerald-100 transition border border-emerald-200">
+                            <button onclick="showQRCode('${car.CarID}', '${car.CarName}')" class="flex-1 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-semibold hover:bg-blue-100 transition border border-blue-200">
                                 <i class="fa-solid fa-qrcode mr-1"></i> QR Code
                             </button>
                         </div>
@@ -836,7 +1164,7 @@
             document.getElementById('carEditForm').reset();
             const title = document.getElementById('carModalTitle');
             const editIdInput = document.getElementById('edit_carId');
-            
+
             if(carId) {
                 const car = STATE.adminCarsList.find(c => c.CarID === carId);
                 title.innerText = 'แก้ไขข้อมูลรถ';
@@ -844,7 +1172,7 @@
                 editIdInput.value = car.CarID;
                 editIdInput.readOnly = true;
                 editIdInput.classList.add('bg-slate-50', 'text-slate-500');
-                
+
                 document.getElementById('edit_carName').value = car.CarName;
                 document.getElementById('edit_licensePlate').value = car.LicensePlate;
                 document.getElementById('edit_mileage').value = car.CurrentMileage;
@@ -855,7 +1183,7 @@
                 editIdInput.readOnly = false;
                 editIdInput.classList.remove('bg-slate-50', 'text-slate-500');
             }
-            
+
             document.getElementById('carEditModal').classList.remove('hidden');
         }
 
@@ -889,11 +1217,11 @@
             const currentUrlBase = window.location.href.split('?')[0];
             const url = `${currentUrlBase}?car=${carId}`;
             const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
-            
+
             document.getElementById('qrTitle').innerText = `${carId} : ${carName}`;
             document.getElementById('qrImage').src = qrApiUrl;
             document.getElementById('qrCurrentLink').value = url;
-            
+
             document.getElementById('qrModal').classList.remove('hidden');
         }
 
@@ -915,7 +1243,7 @@
         function downloadQR() {
             const imgSrc = document.getElementById('qrImage').src;
             const fileName = `QRCode_${document.getElementById('qrTitle').innerText.split(' ')[0]}.png`;
-            
+
             fetch(imgSrc)
                 .then(resp => resp.blob())
                 .then(blob => {
@@ -929,6 +1257,281 @@
                     window.URL.revokeObjectURL(url);
                 })
                 .catch(() => alert('ไม่สามารถดาวน์โหลดได้ กรุณากดค้างที่รูปภาพเพื่อบันทึกแทน'));
+        }
+
+        // ============================================
+        // === Admin Grid Panel (Mobile) Functions ===
+        // ============================================
+        function toggleAdminGridPanel() {
+            const panel = document.getElementById('adminGridPanel');
+            panel.classList.toggle('hidden');
+        }
+
+        function adminGridGo(tab) {
+            toggleAdminGridPanel();
+            switchTab(tab);
+        }
+
+        function adminAddNewCar() {
+            toggleAdminGridPanel();
+            // ต้องไปหน้า admin ก่อนเพื่อโหลด adminCarsList
+            if (STATE.currentTab !== 'admin') {
+                switchTab('admin');
+                setTimeout(() => showCarEditModal(), 500);
+            } else {
+                showCarEditModal();
+            }
+        }
+
+        // ============================================
+        // === Car Usage Report (Admin) Functions   ===
+        // ============================================
+        function showCarUsageView() {
+            document.getElementById('carUsageView').classList.remove('hidden');
+
+            // Set defaults วันแรกของเดือนปัจจุบัน
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            const firstDay = `${yyyy}-${mm}-01`;
+            const todayStr = `${yyyy}-${mm}-${dd}`;
+
+            const monthInput = document.getElementById('cu_month');
+            if (!monthInput.value) monthInput.value = `${yyyy}-${mm}`;
+            const yearInput = document.getElementById('cu_year');
+            if (!yearInput.value) yearInput.value = yyyy;
+            const startInput = document.getElementById('cu_start');
+            if (!startInput.value) startInput.value = firstDay;
+            const endInput = document.getElementById('cu_end');
+            if (!endInput.value) endInput.value = todayStr;
+
+            // โหลด list รถลง dropdown
+            populateCarFilterDropdown();
+
+            // โหลดข้อมูลครั้งแรก
+            loadCarUsageReport();
+        }
+
+        function onUsageFilterModeChange() {
+            const mode = document.getElementById('cu_filterMode').value;
+            document.getElementById('cu_monthField').classList.toggle('hidden', mode !== 'month');
+            document.getElementById('cu_yearField').classList.toggle('hidden', mode !== 'year');
+            document.getElementById('cu_startField').classList.toggle('hidden', mode !== 'range');
+            document.getElementById('cu_endField').classList.toggle('hidden', mode !== 'range');
+        }
+
+        function populateCarFilterDropdown() {
+            const sel = document.getElementById('cu_carFilter');
+            // เคลียร์ options เก่า (เก็บ "ทุกคัน" ไว้)
+            sel.innerHTML = '<option value="ALL">ทุกคัน</option>';
+            (STATE.adminCarsList || []).forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.CarID;
+                opt.text = `${c.CarID} - ${c.CarName}`;
+                sel.appendChild(opt);
+            });
+        }
+
+        function loadCarUsageReport() {
+            const mode = document.getElementById('cu_filterMode').value;
+            const carFilter = document.getElementById('cu_carFilter').value;
+
+            // คำนวณช่วงวันที่ตาม mode
+            let startDate, endDate;
+            if (mode === 'month') {
+                const monthVal = document.getElementById('cu_month').value; // YYYY-MM
+                if (!monthVal) { Toast.fire({ icon: 'warning', title: 'กรุณาเลือกเดือน' }); return; }
+                const [y, m] = monthVal.split('-').map(Number);
+                startDate = new Date(y, m - 1, 1);
+                endDate = new Date(y, m, 0, 23, 59, 59); // วันสุดท้ายของเดือน
+            } else if (mode === 'year') {
+                const yearVal = Number(document.getElementById('cu_year').value);
+                if (!yearVal) { Toast.fire({ icon: 'warning', title: 'กรุณาเลือกปี' }); return; }
+                startDate = new Date(yearVal, 0, 1);
+                endDate = new Date(yearVal, 11, 31, 23, 59, 59);
+            } else {
+                const s = document.getElementById('cu_start').value;
+                const e = document.getElementById('cu_end').value;
+                if (!s || !e) { Toast.fire({ icon: 'warning', title: 'กรุณาเลือกวันที่เริ่ม-สิ้นสุด' }); return; }
+                startDate = new Date(s + 'T00:00:00');
+                endDate = new Date(e + 'T23:59:59');
+            }
+
+            showLoadingOverlay('กำลังดึงข้อมูลการใช้รถ...');
+
+            const payload = {
+                startDate: startDate.toISOString(),
+                endDate: endDate.toISOString(),
+                carId: carFilter === 'ALL' ? null : carFilter
+            };
+
+            fetchAPI('getCarUsageReport', payload)
+                .then(data => {
+                    Swal.close();
+                    // กรองข้อมูลเพิ่มเติมฝั่ง Client (เผื่อ backend ยังไม่ได้ filter)
+                    const logs = (data.logs || []).filter(l => {
+                        if (!l.TimeOut) return false;
+                        const t = new Date(l.TimeOut);
+                        if (t < startDate || t > endDate) return false;
+                        if (carFilter !== 'ALL' && l.CarID !== carFilter) return false;
+                        return true;
+                    });
+                    STATE.carUsageData = logs;
+                    renderCarUsageReport(logs);
+                })
+                .catch(err => handleServerErr(err.message));
+        }
+
+        function renderCarUsageReport(logs) {
+            // ===== KPI สรุป =====
+            let totalTrips = logs.length;
+            let totalDistance = 0;
+            let ongoingTrips = 0;
+            logs.forEach(l => {
+                if (l.Distance && !isNaN(Number(l.Distance))) totalDistance += Number(l.Distance);
+                if (l.Status === 'USING') ongoingTrips++;
+            });
+            const completedTrips = totalTrips - ongoingTrips;
+            const avgDistance = completedTrips > 0 ? Math.round(totalDistance / completedTrips) : 0;
+
+            document.getElementById('cu_totalTrips').innerText = totalTrips.toLocaleString();
+            document.getElementById('cu_totalDistance').innerText = totalDistance.toLocaleString();
+            document.getElementById('cu_ongoingTrips').innerText = ongoingTrips.toLocaleString();
+            document.getElementById('cu_avgDistance').innerText = avgDistance.toLocaleString();
+
+            // ===== Chart: สรุปต่อรถ =====
+            const byCar = {};
+            logs.forEach(l => {
+                const key = l.CarID || 'UNKNOWN';
+                if (!byCar[key]) byCar[key] = { trips: 0, distance: 0 };
+                byCar[key].trips += 1;
+                if (l.Distance && !isNaN(Number(l.Distance))) byCar[key].distance += Number(l.Distance);
+            });
+            const labels = Object.keys(byCar);
+            const tripData = labels.map(k => byCar[k].trips);
+            const distData = labels.map(k => byCar[k].distance);
+
+            const ctx = document.getElementById('carUsageChart').getContext('2d');
+            if (carUsageChart) carUsageChart.destroy();
+            carUsageChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels.length ? labels : ['ไม่มีข้อมูล'],
+                    datasets: [
+                        {
+                            label: 'จำนวนครั้ง',
+                            data: tripData.length ? tripData : [0],
+                            backgroundColor: '#2563eb',
+                            borderRadius: 6,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'ระยะทาง (กม.)',
+                            data: distData.length ? distData : [0],
+                            backgroundColor: '#10b981',
+                            borderRadius: 6,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: {
+                        y:  { beginAtZero: true, position: 'left',  title: { display: true, text: 'จำนวนครั้ง' }, grid: { color: '#f1f5f9' } },
+                        y1: { beginAtZero: true, position: 'right', title: { display: true, text: 'กม.' },        grid: { display: false } },
+                        x:  { grid: { display: false } }
+                    }
+                }
+            });
+
+            // ===== List Table =====
+            const body = document.getElementById('cu_listBody');
+            body.innerHTML = '';
+            document.getElementById('cu_listCount').innerText = `${totalTrips.toLocaleString()} รายการ`;
+
+            if (!logs.length) {
+                body.innerHTML = `
+                    <tr><td colspan="7" class="px-3 py-8 text-center text-slate-400 text-xs">
+                        <i class="fa-regular fa-folder-open text-2xl block mb-1"></i>
+                        ไม่พบข้อมูลในช่วงที่เลือก
+                    </td></tr>`;
+                return;
+            }
+
+            logs.forEach(l => {
+                const d = l.TimeOut ? new Date(l.TimeOut).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+                const dist = l.Distance ? Number(l.Distance).toLocaleString() : '-';
+                const statusBadge = l.Status === 'USING'
+                    ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-red-50 text-red-600">กำลังเดินทาง</span>'
+                    : '<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700">ส่งคืนแล้ว</span>';
+                body.innerHTML += `
+                    <tr class="hover:bg-blue-50/30 transition">
+                        <td class="px-3 py-2 text-xs text-slate-600 whitespace-nowrap">${d}</td>
+                        <td class="px-3 py-2 text-xs font-bold text-slate-800">${l.CarID || '-'}</td>
+                        <td class="px-3 py-2 text-xs text-slate-600">${l.UserName || '-'}</td>
+                        <td class="px-3 py-2 text-xs text-slate-500">${l.Department || '-'}</td>
+                        <td class="px-3 py-2 text-xs text-slate-500">${l.Destination || '-'}</td>
+                        <td class="px-3 py-2 text-xs text-right font-semibold text-slate-700">${dist}</td>
+                        <td class="px-3 py-2 text-xs text-center">${statusBadge}</td>
+                    </tr>`;
+            });
+        }
+
+        function exportCarUsageCSV() {
+            const logs = STATE.carUsageData || [];
+            if (!logs.length) {
+                Toast.fire({ icon: 'warning', title: 'ไม่มีข้อมูลให้ส่งออก กรุณาค้นหาข้อมูลก่อน' });
+                return;
+            }
+
+            const headers = ['วันที่ออก','วันที่กลับ','รหัสรถ','ชื่อผู้ใช้','แผนก','จุดหมาย','วัตถุประสงค์','ไมล์ออก','ไมล์กลับ','ระยะทาง (กม.)','สถานะ','หมายเหตุ'];
+            const rows = logs.map(l => [
+                l.TimeOut  ? new Date(l.TimeOut).toLocaleString('th-TH')  : '',
+                l.TimeIn   ? new Date(l.TimeIn).toLocaleString('th-TH')   : '',
+                l.CarID       || '',
+                l.UserName    || '',
+                l.Department  || '',
+                l.Destination || '',
+                l.Purpose     || '',
+                l.MileageOut  || '',
+                l.MileageIn   || '',
+                l.Distance    || '',
+                l.Status === 'USING' ? 'กำลังเดินทาง' : 'ส่งคืนแล้ว',
+                l.Remark      || ''
+            ]);
+
+            // สร้าง CSV (escape comma, double quote, newline)
+            const escape = (v) => {
+                const s = String(v == null ? '' : v);
+                if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+                    return '"' + s.replace(/"/g, '""') + '"';
+                }
+                return s;
+            };
+            const csvLines = [
+                headers.map(escape).join(','),
+                ...rows.map(r => r.map(escape).join(','))
+            ];
+            const csvContent = '﻿' + csvLines.join('\r\n'); // BOM ป้องกันภาษาไทยเพี้ยน
+
+            const filterMode = document.getElementById('cu_filterMode').value;
+            const carFilter = document.getElementById('cu_carFilter').value;
+            const tsStr = new Date().toISOString().slice(0, 10);
+            const fname = `car-usage-${carFilter}-${filterMode}-${tsStr}.csv`;
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fname;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            Toast.fire({ icon: 'success', title: `ส่งออก ${logs.length} รายการเป็น CSV เรียบร้อย` });
         }
 
         // --- Mock Data (สำหรับรันช่วงออฟไลน์ หรือยังไม่ได้ระบุสคริปต์จริง) ---
@@ -954,6 +1557,16 @@
                             { CarID: 'CAR001', CarName: 'รถกระบะแคปสีบรอนซ์', LicensePlate: 'บม 9999 นนทบุรี', Status: 'AVAILABLE', CurrentMileage: 85000 },
                             { CarID: 'CAR002', CarName: 'รถตู้ตารางงานวีไอพี', LicensePlate: 'ฮน 5432 กรุงเทพฯ', Status: 'USING', CurrentMileage: 130240 }
                         ]);
+                    } else if (action === 'getCarUsageReport') {
+                        // Mock: รายการการใช้รถ
+                        const now = new Date();
+                        resolve({
+                            logs: [
+                                { TimeOut: new Date(now.getTime() - 86400000*2), TimeIn: new Date(now.getTime() - 86400000*2 + 7200000), CarID: 'CAR001', UserName: 'พนักงาน A', Department: 'ฝ่ายขาย', Destination: 'ลูกค้าพระราม 9', Purpose: 'ส่งของ', MileageOut: 85000, MileageIn: 85150, Distance: 150, Status: 'COMPLETED', Remark: '' },
+                                { TimeOut: new Date(now.getTime() - 86400000), TimeIn: new Date(now.getTime() - 86400000 + 5400000), CarID: 'CAR002', UserName: 'พนักงาน B', Department: 'ฝ่ายบุคคล', Destination: 'ราชการ สำนักงานเขต', Purpose: 'ติดต่อราชการ', MileageOut: 130240, MileageIn: 130305, Distance: 65, Status: 'COMPLETED', Remark: '' },
+                                { TimeOut: new Date(now.getTime() - 3600000), TimeIn: null, CarID: 'CAR001', UserName: 'พนักงาน C', Department: 'ฝ่ายขาย', Destination: 'ตลาดสด', Purpose: 'ตรวจสินค้า', MileageOut: 85150, MileageIn: null, Distance: null, Status: 'USING', Remark: '' }
+                            ]
+                        });
                     } else {
                         resolve(true);
                     }
@@ -963,10 +1576,8 @@
 
         function showError(msg) {
             Swal.close();
-            document.getElementById('formView').classList.add('hidden');
-            document.getElementById('emptyStateView').classList.add('hidden');
-            document.getElementById('dashboardView').classList.add('hidden');
-            document.getElementById('historyView').classList.add('hidden');
+            ['formView','emptyStateView','dashboardView','historyView','adminPanelView','adminLoginView','carUsageView']
+                .forEach(id => document.getElementById(id).classList.add('hidden'));
             document.getElementById('errorView').classList.remove('hidden');
             document.getElementById('errorText').innerText = msg;
         }
@@ -984,7 +1595,7 @@
                 icon: 'success',
                 title: 'เสร็จเรียบร้อย!',
                 text: msg,
-                confirmButtonColor: '#059669',
+                confirmButtonColor: '#2563eb',
                 customClass: { popup: 'rounded-2xl' }
             }).then(() => {
                 window.location.reload();
@@ -992,7 +1603,7 @@
         }
 
         function handleServerErr(err) {
-            Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด!', text: err, confirmButtonColor: '#059669' });
+            Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด!', text: err, confirmButtonColor: '#2563eb' });
         }
     </script>
 </body>
