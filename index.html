@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Fleet Management</title>
+    <title>PCM Cars Management</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -81,7 +81,7 @@
                     <i class="fa-solid fa-car-side text-white text-base"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-slate-800 tracking-tight text-base leading-none">SmartFleet</h1>
+                    <h1 class="font-bold text-slate-800 tracking-tight text-base leading-none">PCM</h1>
                     <span class="text-[10px] text-slate-400 font-medium">Vehicle Management</span>
                 </div>
             </div>
@@ -141,7 +141,7 @@
                     <div class="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center shadow-sm shadow-blue-600/30">
                         <i class="fa-solid fa-car-side text-white text-sm"></i>
                     </div>
-                    <span class="font-bold text-slate-800 tracking-tight text-base">SmartFleet</span>
+                    <span class="font-bold text-slate-800 tracking-tight text-base">PCM</span>
                 </div>
                 <div class="hidden lg:block">
                     <h2 id="pageHeaderTitle" class="text-base font-bold text-slate-800">ยินดีต้อนรับ</h2>
@@ -296,7 +296,7 @@
                 <div id="carStatusView" class="hidden space-y-4 pb-6">
                     <div class="flex justify-between items-center flex-wrap gap-2">
                         <h2 class="text-lg font-bold text-slate-800 tracking-tight flex items-center"><i class="fa-solid fa-car-side mr-2 text-blue-600"></i>สถานะรถปัจจุบัน</h2>
-                        <button onclick="loadCarStatus()" class="text-xs font-semibold text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition border border-blue-200 flex items-center">
+                        <button onclick="loadCarStatus(true)" class="text-xs font-semibold text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition border border-blue-200 flex items-center">
                             <i class="fa-solid fa-rotate mr-1"></i> รีเฟรช
                         </button>
                     </div>
@@ -326,7 +326,12 @@
 
                 <!-- View: Dashboard (Admin) -->
                 <div id="dashboardView" class="hidden space-y-5 pb-6">
-                    <h2 class="text-lg font-bold text-slate-800 tracking-tight flex items-center"><i class="fa-solid fa-chart-pie mr-2 text-blue-600"></i>ข้อมูลสถิติรวม</h2>
+                    <div class="flex justify-between items-center flex-wrap gap-2">
+                        <h2 class="text-lg font-bold text-slate-800 tracking-tight flex items-center"><i class="fa-solid fa-chart-pie mr-2 text-blue-600"></i>ข้อมูลสถิติรวม</h2>
+                        <button onclick="loadDashboardData(true)" class="text-xs font-semibold text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition border border-blue-200 flex items-center">
+                            <i class="fa-solid fa-rotate mr-1"></i> รีเฟรช
+                        </button>
+                    </div>
 
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between border-l-2 border-l-blue-500">
@@ -348,14 +353,21 @@
                     </div>
 
                     <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">ปริมาณการใช้งานย้อนหลัง</h3>
-                        <canvas id="usageChart" height="120"></canvas>
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4"><i class="fa-solid fa-chart-column mr-1 text-blue-600"></i>ปริมาณการใช้งานย้อนหลัง 7 วัน</h3>
+                        <div class="relative" style="height: 240px;">
+                            <canvas id="usageChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 <!-- View: History (Feed รายการแบบโมบายแอปพลิเคชัน) -->
                 <div id="historyView" class="hidden space-y-4 pb-6">
-                    <h2 class="text-lg font-bold text-slate-800 tracking-tight flex items-center"><i class="fa-solid fa-clock-rotate-left mr-2 text-blue-600"></i>ประวัติลงทะเบียนล่าสุด</h2>
+                    <div class="flex justify-between items-center flex-wrap gap-2">
+                        <h2 class="text-lg font-bold text-slate-800 tracking-tight flex items-center"><i class="fa-solid fa-clock-rotate-left mr-2 text-blue-600"></i>ประวัติลงทะเบียนล่าสุด</h2>
+                        <button onclick="loadHistoryData(true)" class="text-xs font-semibold text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition border border-blue-200 flex items-center">
+                            <i class="fa-solid fa-rotate mr-1"></i> รีเฟรช
+                        </button>
+                    </div>
                     <div id="historyFeed" class="space-y-3"></div>
                 </div>
 
@@ -385,11 +397,16 @@
 
                 <!-- View: Admin Panel -->
                 <div id="adminPanelView" class="hidden space-y-4 pb-6">
-                    <div class="flex justify-between items-center">
+                    <div class="flex justify-between items-center flex-wrap gap-2">
                         <h2 class="text-lg font-bold text-slate-800 tracking-tight flex items-center"><i class="fa-solid fa-car text-blue-600 mr-2"></i>จัดการข้อมูลรถ</h2>
-                        <button onclick="showCarEditModal()" class="text-xs font-semibold text-white bg-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-700 transition shadow-sm flex items-center">
-                            <i class="fa-solid fa-plus mr-1"></i> เพิ่มรถใหม่
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button onclick="loadAdminPanel(true)" class="text-xs font-semibold text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition border border-blue-200 flex items-center">
+                                <i class="fa-solid fa-rotate mr-1"></i> รีเฟรช
+                            </button>
+                            <button onclick="showCarEditModal()" class="text-xs font-semibold text-white bg-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-700 transition shadow-sm flex items-center">
+                                <i class="fa-solid fa-plus mr-1"></i> เพิ่มรถใหม่
+                            </button>
+                        </div>
                     </div>
                     <div id="adminCarsList" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
                 </div>
@@ -481,10 +498,29 @@
                         </div>
                     </div>
 
-                    <!-- Chart -->
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4"><i class="fa-solid fa-chart-column mr-1 text-blue-600"></i>เปรียบเทียบการใช้งานแต่ละคัน</h3>
-                        <canvas id="carUsageChart" height="120"></canvas>
+                    <!-- Charts: 2 Donut Charts (Trips + Distance) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <!-- Donut 1: Trips -->
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center"><i class="fa-solid fa-rotate mr-1 text-blue-600"></i>จำนวนครั้งการใช้รถ</h3>
+                                <span id="cu_tripsTotal" class="text-[10px] font-bold text-blue-600">0 ครั้ง</span>
+                            </div>
+                            <div class="relative" style="height: 260px;">
+                                <canvas id="carTripsChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Donut 2: Distance -->
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center"><i class="fa-solid fa-route mr-1 text-emerald-600"></i>ระยะทางของแต่ละคัน</h3>
+                                <span id="cu_distTotal" class="text-[10px] font-bold text-emerald-600">0 กม.</span>
+                            </div>
+                            <div class="relative" style="height: 260px;">
+                                <canvas id="carDistanceChart"></canvas>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- List -->
@@ -679,8 +715,74 @@
             carUsageData: []        // ข้อมูลที่ผ่านการ Filter แล้ว
         };
         let myChart = null;
-        let carUsageChart = null;
+        let carTripsChart = null;
+        let carDistanceChart = null;
         let html5QrScanner = null;
+
+        // ============================================================
+        // === CACHE LAYER (เร่งความเร็วการโหลดหน้าซ้ำๆ ที่ไม่มีการเปลี่ยนแปลง)
+        // ============================================================
+        const APP_CACHE = {
+            store: {},
+            DEFAULT_TTL: 2 * 60 * 1000, // 2 นาที (cache ค้าง 2 นาที)
+
+            _key(action, payload) {
+                const p = (payload && Object.keys(payload).length) ? JSON.stringify(payload) : '';
+                return action + ':' + p;
+            },
+
+            // คืน data ถ้ายังไม่หมดอายุ มิฉะนั้นคืน null
+            get(action, payload) {
+                const k = this._key(action, payload || {});
+                const entry = this.store[k];
+                if (!entry) return null;
+                if (Date.now() > entry.expires) {
+                    delete this.store[k];
+                    return null;
+                }
+                return entry.data;
+            },
+
+            set(action, payload, data, ttl) {
+                const k = this._key(action, payload || {});
+                this.store[k] = {
+                    data: data,
+                    expires: Date.now() + (ttl || this.DEFAULT_TTL),
+                    cachedAt: Date.now()
+                };
+            },
+
+            // ล้าง cache ทั้งหมด - เรียกหลัง write operations
+            invalidateAll() {
+                this.store = {};
+            },
+
+            // ล้างเฉพาะ action ที่ระบุ
+            invalidateActions() {
+                const actions = Array.from(arguments);
+                actions.forEach(a => {
+                    Object.keys(this.store).forEach(k => {
+                        if (k.startsWith(a + ':')) delete this.store[k];
+                    });
+                });
+            }
+        };
+
+        // helper: ดึงข้อมูลโดยใช้ cache ก่อน (เร็วทันที), fall-back ไป fetch
+        // ถ้า force=true จะข้าม cache บังคับเรียกใหม่
+        function fetchCached(action, payload, force) {
+            payload = payload || {};
+            if (!force) {
+                const cached = APP_CACHE.get(action, payload);
+                if (cached !== null) {
+                    return Promise.resolve({ data: cached, fromCache: true });
+                }
+            }
+            return fetchAPI(action, payload).then(data => {
+                APP_CACHE.set(action, payload, data);
+                return { data: data, fromCache: false };
+            });
+        }
 
         const Toast = Swal.mixin({
             toast: true,
@@ -691,6 +793,7 @@
         });
 
         // ฟังก์ชันส่งข้อมูลไปหา Google Apps Script API พร้อมป้องกันปัญหา CORS
+        // (Cache จัดการที่ระดับ load function โดยใช้ APP_CACHE)
         async function fetchAPI(action, payload = {}) {
             if (!BACKEND_URL || BACKEND_URL.startsWith("YOUR_GOOGLE_APPS_SCRIPT")) {
                 // หากรันในสภาวะจำลองและยังไม่ได้เซ็ตลิงก์จริง จะดึง Mock data ทำงานทันที
@@ -816,7 +919,7 @@
                 carUsage: 'สถิติการใช้รถแต่ละคัน'
             };
             const titleEl = document.getElementById('pageHeaderTitle');
-            if (titleEl) titleEl.innerText = titleMap[STATE.currentTab] || 'SmartFleet';
+            if (titleEl) titleEl.innerText = titleMap[STATE.currentTab] || 'PCM';
 
             if (STATE.currentTab === 'form') {
                 if (STATE.car) {
@@ -993,7 +1096,10 @@
                     };
 
                     fetchAPI('processCheckout', payload)
-                        .then(() => successEnd('รับรถเสร็จสิ้น ขอให้เดินทางปลอดภัย!'))
+                        .then(() => {
+                            APP_CACHE.invalidateAll();
+                            successEnd('รับรถเสร็จสิ้น ขอให้เดินทางปลอดภัย!');
+                        })
                         .catch(err => handleServerErr(err.message));
                 }
             });
@@ -1031,17 +1137,27 @@
                     };
 
                     fetchAPI('processReturn', payload)
-                        .then(() => successEnd('ส่งคืนเสร็จสิ้น นำกุญแจเก็บที่ตู้ได้เลยครับ!'))
+                        .then(() => {
+                            APP_CACHE.invalidateAll();
+                            successEnd('ส่งคืนเสร็จสิ้น นำกุญแจเก็บที่ตู้ได้เลยครับ!');
+                        })
                         .catch(err => handleServerErr(err.message));
                 }
             });
         });
 
         // 3. Dashboard Logic
-        function loadDashboardData() {
+        function loadDashboardData(force) {
+            // ลอง cache ก่อน — แสดงผลทันทีถ้ามี
+            const cached = !force ? APP_CACHE.get('getDashboardData') : null;
+            if (cached) { renderDashboard(cached); return; }
+
             showLoadingOverlay('กำลังดึงสถิติ...');
             fetchAPI('getDashboardData')
-                .then(renderDashboard)
+                .then(data => {
+                    APP_CACHE.set('getDashboardData', {}, data);
+                    renderDashboard(data);
+                })
                 .catch(err => handleServerErr(err.message));
         }
 
@@ -1080,11 +1196,17 @@
             });
         }
 
-        // 4. History Feed Logic
-        function loadHistoryData() {
+        // 4. History Feed Logic (ใช้ data ก้อนเดียวกันกับ Dashboard — ใช้ cache ตัวเดียวกัน)
+        function loadHistoryData(force) {
+            const cached = !force ? APP_CACHE.get('getDashboardData') : null;
+            if (cached) { renderHistoryFeed(cached); return; }
+
             showLoadingOverlay('กำลังดึงประวัติสัญจร...');
             fetchAPI('getDashboardData')
-                .then(renderHistoryFeed)
+                .then(data => {
+                    APP_CACHE.set('getDashboardData', {}, data);
+                    renderHistoryFeed(data);
+                })
                 .catch(err => handleServerErr(err.message));
         }
 
@@ -1158,13 +1280,19 @@
             Toast.fire({ icon: 'info', title: 'ออกจากโหมดผู้ดูแลเรียบร้อย' });
         }
 
-        function loadAdminPanel() {
+        function loadAdminPanel(force) {
             document.getElementById('adminLoginView').classList.add('hidden');
             document.getElementById('adminPanelView').classList.remove('hidden');
-            showLoadingOverlay('กำลังดึงข้อมูลคลังรถ...');
 
+            const cached = !force ? APP_CACHE.get('getAdminCars') : null;
+            if (cached) { renderAdminCars(cached); return; }
+
+            showLoadingOverlay('กำลังดึงข้อมูลคลังรถ...');
             fetchAPI('getAdminCars')
-                .then(renderAdminCars)
+                .then(data => {
+                    APP_CACHE.set('getAdminCars', {}, data);
+                    renderAdminCars(data);
+                })
                 .catch(err => handleServerErr(err.message));
         }
 
@@ -1248,9 +1376,10 @@
             showLoadingOverlay('กำลังบันทึกข้อมูลรถ...');
             fetchAPI('saveAdminCar', payload)
                 .then(() => {
+                    APP_CACHE.invalidateAll(); // ข้อมูลรถเปลี่ยน → เคลียร์ cache ทั้งหมด
                     Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ', timer: 1500, showConfirmButton: false });
                     closeCarEditModal();
-                    loadAdminPanel();
+                    loadAdminPanel(true); // บังคับโหลดสด
                 })
                 .catch(err => handleServerErr(err.message));
         });
@@ -1305,15 +1434,26 @@
         // ============================================
         // === Car Status (Read-only for everyone) ===
         // ============================================
-        function loadCarStatus() {
+        function loadCarStatus(force) {
+            const cached = !force ? APP_CACHE.get('getCarsStatus') : null;
+            if (cached) { renderCarStatus(cached); return; }
+
             showLoadingOverlay('กำลังดึงสถานะรถทั้งหมด...');
             fetchAPI('getCarsStatus')
-                .then(renderCarStatus)
+                .then(data => {
+                    APP_CACHE.set('getCarsStatus', {}, data);
+                    renderCarStatus(data);
+                })
                 .catch(err => {
                     // กรณี backend ยังไม่มี action นี้ ลอง fallback ใช้ getAdminCars ถ้ามีสิทธิ์ admin
                     if (STATE.isAdminLogged) {
+                        const adminCached = APP_CACHE.get('getAdminCars');
+                        if (adminCached) { renderCarStatus(adminCached); return; }
                         fetchAPI('getAdminCars')
-                            .then(renderCarStatus)
+                            .then(data => {
+                                APP_CACHE.set('getAdminCars', {}, data);
+                                renderCarStatus(data);
+                            })
                             .catch(e2 => handleServerErr(e2.message));
                     } else {
                         handleServerErr(err.message + ' (กรุณาเพิ่ม action "getCarsStatus" ใน code.gs)');
@@ -1487,27 +1627,35 @@
                 endDate = new Date(e + 'T23:59:59');
             }
 
-            showLoadingOverlay('กำลังดึงข้อมูลการใช้รถ...');
-
             const payload = {
                 startDate: startDate.toISOString(),
                 endDate: endDate.toISOString(),
                 carId: carFilter === 'ALL' ? null : carFilter
             };
 
+            const applyAndRender = (data) => {
+                // กรองข้อมูลเพิ่มเติมฝั่ง Client (เผื่อ backend ยังไม่ได้ filter)
+                const logs = (data.logs || []).filter(l => {
+                    if (!l.TimeOut) return false;
+                    const t = new Date(l.TimeOut);
+                    if (t < startDate || t > endDate) return false;
+                    if (carFilter !== 'ALL' && l.CarID !== carFilter) return false;
+                    return true;
+                });
+                STATE.carUsageData = logs;
+                Swal.close();
+                renderCarUsageReport(logs);
+            };
+
+            // ลอง cache ก่อน (cache key รวม payload ดังนั้นช่วงเวลา/รถต่างกันได้ entry แยกกัน)
+            const cached = APP_CACHE.get('getCarUsageReport', payload);
+            if (cached) { applyAndRender(cached); return; }
+
+            showLoadingOverlay('กำลังดึงข้อมูลการใช้รถ...');
             fetchAPI('getCarUsageReport', payload)
                 .then(data => {
-                    Swal.close();
-                    // กรองข้อมูลเพิ่มเติมฝั่ง Client (เผื่อ backend ยังไม่ได้ filter)
-                    const logs = (data.logs || []).filter(l => {
-                        if (!l.TimeOut) return false;
-                        const t = new Date(l.TimeOut);
-                        if (t < startDate || t > endDate) return false;
-                        if (carFilter !== 'ALL' && l.CarID !== carFilter) return false;
-                        return true;
-                    });
-                    STATE.carUsageData = logs;
-                    renderCarUsageReport(logs);
+                    APP_CACHE.set('getCarUsageReport', payload, data);
+                    applyAndRender(data);
                 })
                 .catch(err => handleServerErr(err.message));
         }
@@ -1529,7 +1677,7 @@
             document.getElementById('cu_ongoingTrips').innerText = ongoingTrips.toLocaleString();
             document.getElementById('cu_avgDistance').innerText = avgDistance.toLocaleString();
 
-            // ===== Chart: สรุปต่อรถ =====
+            // ===== Donut Charts: สรุปต่อรถ =====
             const byCar = {};
             logs.forEach(l => {
                 const key = l.CarID || 'UNKNOWN';
@@ -1541,39 +1689,84 @@
             const tripData = labels.map(k => byCar[k].trips);
             const distData = labels.map(k => byCar[k].distance);
 
-            const ctx = document.getElementById('carUsageChart').getContext('2d');
-            if (carUsageChart) carUsageChart.destroy();
-            carUsageChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels.length ? labels : ['ไม่มีข้อมูล'],
-                    datasets: [
-                        {
-                            label: 'จำนวนครั้ง',
-                            data: tripData.length ? tripData : [0],
-                            backgroundColor: '#2563eb',
-                            borderRadius: 6,
-                            yAxisID: 'y'
-                        },
-                        {
-                            label: 'ระยะทาง (กม.)',
-                            data: distData.length ? distData : [0],
-                            backgroundColor: '#10b981',
-                            borderRadius: 6,
-                            yAxisID: 'y1'
+            // จานสีให้แต่ละคัน (เน้นน้ำเงิน-เขียว-แดง ตามธีม)
+            const carColors = [
+                '#2563eb', '#10b981', '#ef4444', '#f59e0b', '#8b5cf6',
+                '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#6366f1',
+                '#14b8a6', '#a855f7', '#dc2626', '#0891b2', '#65a30d'
+            ];
+            const colorsForCars = labels.map((_, i) => carColors[i % carColors.length]);
+
+            // อัปเดตค่ายอดรวมที่หัวการ์ด
+            const sumTrips = tripData.reduce((a, b) => a + b, 0);
+            const sumDist = distData.reduce((a, b) => a + b, 0);
+            document.getElementById('cu_tripsTotal').innerText = `${sumTrips.toLocaleString()} ครั้ง`;
+            document.getElementById('cu_distTotal').innerText  = `${sumDist.toLocaleString()} กม.`;
+
+            // Options ใช้ร่วมกัน 2 chart
+            const donutOptions = (unit) => ({
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '62%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 10, boxHeight: 10, padding: 8,
+                            font: { size: 11 }, usePointStyle: true, pointStyle: 'circle'
                         }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom' } },
-                    scales: {
-                        y:  { beginAtZero: true, position: 'left',  title: { display: true, text: 'จำนวนครั้ง' }, grid: { color: '#f1f5f9' } },
-                        y1: { beginAtZero: true, position: 'right', title: { display: true, text: 'กม.' },        grid: { display: false } },
-                        x:  { grid: { display: false } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => {
+                                const v = ctx.parsed || 0;
+                                const total = ctx.dataset.data.reduce((a, b) => a + b, 0) || 1;
+                                const pct = ((v / total) * 100).toFixed(1);
+                                return `${ctx.label}: ${v.toLocaleString()} ${unit} (${pct}%)`;
+                            }
+                        }
                     }
                 }
+            });
+
+            const hasData = labels.length > 0 && sumTrips > 0;
+            const chartLabels  = hasData ? labels : ['ไม่มีข้อมูล'];
+            const chartColors  = hasData ? colorsForCars : ['#e2e8f0'];
+
+            // ---------- Donut 1: จำนวนครั้ง ----------
+            const ctxTrips = document.getElementById('carTripsChart').getContext('2d');
+            if (carTripsChart) carTripsChart.destroy();
+            carTripsChart = new Chart(ctxTrips, {
+                type: 'doughnut',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        data: hasData ? tripData : [1],
+                        backgroundColor: chartColors,
+                        borderColor: '#ffffff',
+                        borderWidth: 2,
+                        hoverOffset: 6
+                    }]
+                },
+                options: donutOptions('ครั้ง')
+            });
+
+            // ---------- Donut 2: ระยะทาง ----------
+            const ctxDist = document.getElementById('carDistanceChart').getContext('2d');
+            if (carDistanceChart) carDistanceChart.destroy();
+            carDistanceChart = new Chart(ctxDist, {
+                type: 'doughnut',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        data: hasData && sumDist > 0 ? distData : [1],
+                        backgroundColor: chartColors,
+                        borderColor: '#ffffff',
+                        borderWidth: 2,
+                        hoverOffset: 6
+                    }]
+                },
+                options: donutOptions('กม.')
             });
 
             // ===== List Table =====
