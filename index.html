@@ -1053,7 +1053,7 @@
 
                 document.getElementById('checkoutForm').classList.remove('hidden');
                 // document.getElementById('chk_userName').value = STATE.user.Name;
-                document.getElementById('chk_mileage').value = STATE.car.CurrentMileage;
+                document.getElementById('chk_mileage').value = '';
                 document.getElementById('chk_mileage').min = STATE.car.CurrentMileage;
 
             } else if (STATE.car.Status === 'USING') {
@@ -1064,7 +1064,7 @@
                 document.getElementById('ret_activeUser').innerText = STATE.activeLog ? STATE.activeLog.UserName : STATE.user.Name;
                 const outMileage = STATE.activeLog ? STATE.activeLog.MileageOut : STATE.car.CurrentMileage;
                 document.getElementById('ret_activeMileage').innerText = Number(outMileage).toLocaleString();
-                document.getElementById('ret_mileage').value = outMileage;
+                document.getElementById('ret_mileage').value = '';
                 document.getElementById('ret_mileage').min = outMileage;
             } else {
                 badge.innerText = 'ซ่อมบำรุง';
