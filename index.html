@@ -1038,7 +1038,11 @@
             document.getElementById('carLicense').innerText = `ทะเบียน: ${STATE.car.LicensePlate}`;
             document.getElementById('carMileage').innerText = Number(STATE.car.CurrentMileage).toLocaleString();
             document.getElementById('carUpdated').innerText = STATE.car.LastUpdated ? new Date(STATE.car.LastUpdated).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.' : '-';
-            document.getElementById('carLastUser').innerText = STATE.car.LastUser || STATE.activeLog?.UserName || '-';
+            // ดึงผู้ใช้งานล่าสุดจาก activeLog ก่อน ถ้าไม่มีค่อยดูจาก Cars sheet
+            document.getElementById('carLastUser').innerText = 
+            (STATE.activeLog && STATE.activeLog.UserName) 
+            ? STATE.activeLog.UserName 
+            : (STATE.car.LastUser || '-');
             document.getElementById('checkoutForm').classList.add('hidden');
             document.getElementById('returnForm').classList.add('hidden');
 
