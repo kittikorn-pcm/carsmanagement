@@ -1141,10 +1141,10 @@
 
                     const payload = {
                         carId: STATE.car.CarID,
-                        userName: STATE.user.Name,
+                        userName: STATE.activeLog ? STATE.activeLog.UserName : STATE.user.Name,
                         mileageIn: inMileage,
                         remark: document.getElementById('ret_remark').value
-                    };
+                        };
 
                     fetchAPI('processReturn', payload)
                         .then(() => {
