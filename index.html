@@ -212,20 +212,20 @@
                             <div>
                                 <span id="carStatusBadge" class="text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">STATUS</span>
                                 <h2 class="text-xl font-bold text-slate-800 mt-2" id="carTitle">CAR-000</h2>
-                                <p class="text-xs text-slate-400 mt-0.5" id="carLicense">ป้ายทะเบียน: -</p>
+                                <p class="text-xs text-slate-700 mt-0.5" id="carLicense">ป้ายทะเบียน: -</p>
                             </div>
                             <div class="text-right">
-                                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">เลขไมล์ล่าสุด</span>
+                                <span class="text-[10px] uppercase font-bold tracking-wider text-slate-700">เลขไมล์ล่าสุด</span>
                                 <p class="text-2xl font-extrabold text-slate-900 leading-none mt-1" id="carMileage">0</p>
-                                <span class="text-[10px] text-slate-400">กิโลเมตร</span>
+                                <span class="text-[10px] text-slate-600">กิโลเมตร</span>
                             </div>
                         </div>
-                        <div class="pt-3 border-t border-slate-100 flex flex-col gap-2 text-xs text-slate-400">
+                        <div class="pt-3 border-t border-slate-100 flex flex-col gap-2 text-xs text-slate-600">
                             <div class="flex justify-between items-center">
                             <span><i class="fa-regular fa-user mr-1"></i> ผู้ใช้งานล่าสุด:</span>
                             <span class="font-medium text-blue-600" id="carLastUser">-</span>
                         </div>
-                        <div class="pt-3 border-t border-slate-100 flex justify-between items-center text-xs text-slate-400">
+                        <div class="pt-3 border-t border-slate-100 flex justify-between items-center text-xs text-slate-600">
                             <span><i class="fa-regular fa-clock mr-1"></i> อัปเดตล่าสุด:</span>
                             <span class="font-medium text-slate-600" id="carUpdated">-</span>
                         </div>
@@ -241,23 +241,23 @@
 
                         <div class="space-y-3">
                             <div>
-                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">ชื่อผู้ใช้รถ</label>
+                                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">ชื่อผู้ใช้รถ</label>
                                 <input type="text" id="chk_userName" required placeholder="ชื่อผู้ขับรถ" class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none transition">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">แผนก / ฝ่าย</label>
+                                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">แผนก / ฝ่าย</label>
                                 <input type="text" id="chk_department" required placeholder="เช่น ฝ่ายบุคคล, ฝ่ายขาย" class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none transition">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">จุดหมายปลายทาง</label>
+                                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">จุดหมายปลายทาง</label>
                                 <input type="text" id="chk_destination" required placeholder="เช่น ไปติดต่อราชการ, ตรวจไซต์งาน" class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none transition">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">วัตถุประสงค์การเดินทาง</label>
+                                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">วัตถุประสงค์การเดินทาง</label>
                                 <input type="text" id="chk_purpose" required placeholder="ระบุเหตุผลในการใช้รถคันนี้" class="w-full p-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:outline-none transition">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">เลขไมล์ก่อนออกเดินทาง (กม.)</label>
+                                <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">เลขไมล์ก่อนออกเดินทาง (กม.)</label>
                                 <input type="number" id="chk_mileage" required class="w-full p-3 border border-blue-500 rounded-xl text-lg font-bold text-blue-600 focus:ring-2 focus:ring-blue-500/20 focus:outline-none transition">
                                 <p class="text-xs text-red-500 mt-1 hidden" id="chk_mileage_error"><i class="fa-solid fa-circle-exclamation mr-1"></i>ตัวเลขต้องไม่ต่ำกว่าค่าไมล์สะสมล่าสุด</p>
                             </div>
@@ -708,6 +708,8 @@
     <script>
         // 🚨 ระบุ URL ของ GOOGLE APPS SCRIPT WEB APP ที่นี่หลังจากทำ DEPLOY
         const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwXE1mpYnQH7haqVM7r2hajYRQoawQQsGLOSf7DIUpry0fd-6mmjSzImN7HynyCn6M/exec";
+        // ⬇️ เพิ่มบรรทัดนี้: ใส่ลิงก์ GitHub Pages ของคุณ (ตัวที่ users ใช้สแกนจริง)
+        const APP_BASE_URL = "https://kittikorn-pcm.github.io/carsmanagement/";
 
         // Global State
         let STATE = {
@@ -1396,14 +1398,14 @@
 
         // --- ระบบสร้าง QR Code ---
         function showQRCode(carId, carName) {
-            const currentUrlBase = window.location.href.split('?')[0];
-            const url = `${currentUrlBase}?car=${carId}`;
+            // ใช้ APP_BASE_URL ตายตัว ถ้าลืมตั้งค่อยใช้หน้าปัจจุบันเป็น fallback
+            const base = APP_BASE_URL || window.location.href.split('?')[0];
+            const url = `${base}?car=${encodeURIComponent(carId)}`;
             const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
 
             document.getElementById('qrTitle').innerText = `${carId} : ${carName}`;
             document.getElementById('qrImage').src = qrApiUrl;
             document.getElementById('qrCurrentLink').value = url;
-
             document.getElementById('qrModal').classList.remove('hidden');
         }
 
